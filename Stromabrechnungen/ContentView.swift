@@ -46,6 +46,11 @@ struct ContentView: View {
                         Label("Neue Stromgemeinschaft", systemImage: "plus")
                     }
                 }
+                ToolbarItem(placement: .navigation) {
+                    NavigationLink(destination: SettingsView()) {
+                        Label("Einstellungen", systemImage: "gear")
+                    }
+                }
             }
             .sheet(isPresented: $zeigeNeuAnlegen) {
                 StromgemeinschaftBearbeitenView()

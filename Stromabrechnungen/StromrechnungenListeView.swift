@@ -13,6 +13,7 @@ struct StromrechnungenListeView: View {
     let gemeinschaft: Stromgemeinschaft
 
     @State private var zeigeNeuAnlegen = false
+    @State private var zeigePDFImport = false
 
     private var sortierteRechnungen: [Stromrechnung] {
         gemeinschaft.stromrechnungen.sorted { $0.rechnungsdatum > $1.rechnungsdatum }
@@ -48,15 +49,27 @@ struct StromrechnungenListeView: View {
                     Button("Schliessen") { dismiss() }
                 }
                 ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        zeigeNeuAnlegen = true
+                    Menu {
+                        Button {
+                            zeigeNeuAnlegen = true
+                        } label: {
+                            Label("Manuell erfassen", systemImage: "square.and.pencil")
+                        }
+                        Button {
+                            zeigePDFImport = true
+                        } label: {
+                            Label("PDF mit Claude AI importieren", systemImage: "sparkles")
+                        }
                     } label: {
-                        Label("Neue Stromrechnung", systemImage: "plus")
+                        Label("Hinzufügen", systemImage: "plus")
                     }
                 }
             }
             .sheet(isPresented: $zeigeNeuAnlegen) {
                 StromrechnungBearbeitenView(gemeinschaft: gemeinschaft)
+            }
+            .sheet(isPresented: $zeigePDFImport) {
+                PDFStromrechnungImportView(gemeinschaft: gemeinschaft)
             }
         }
     }
