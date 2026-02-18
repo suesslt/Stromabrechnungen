@@ -11,6 +11,8 @@ struct ContentView: View {
     @Query(sort: \Stromgemeinschaft.bezeichnung) private var gemeinschaften: [Stromgemeinschaft]
 
     @State private var zeigeNeuAnlegen = false
+    @State private var zuLoeschende: Stromgemeinschaft? = nil
+    @State private var zeigeLoeschenBestaetigung = false
 
     private let columns = [GridItem(.adaptive(minimum: 200, maximum: 280), spacing: 16)]
 
@@ -32,9 +34,36 @@ struct ContentView: View {
                             }
                             .buttonStyle(.plain)
                             .frame(maxWidth: .infinity)
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    zuLoeschende = gemeinschaft
+                                    zeigeLoeschenBestaetigung = true
+                                } label: {
+                                    Label("Löschen", systemImage: "trash")
+                                }
+                            }
                         }
                     }
                     .padding()
+                }
+            }
+            .confirmationDialog(
+                "Stromgemeinschaft löschen?",
+                isPresented: $zeigeLoeschenBestaetigung,
+                titleVisibility: .visible
+            ) {
+                Button("Löschen", role: .destructive) {
+                    if let gemeinschaft = zuLoeschende {
+                        modelContext.delete(gemeinschaft)
+                    }
+                    zuLoeschende = nil
+                }
+                Button("Abbrechen", role: .cancel) {
+                    zuLoeschende = nil
+                }
+            } message: {
+                if let name = zuLoeschende?.bezeichnung {
+                    Text("\u{201E}\(name)\u{201C} und alle zugehörigen Daten werden unwiderruflich gelöscht.")
                 }
             }
             .navigationTitle("Stromgemeinschaften")

@@ -153,7 +153,17 @@ struct StromgemeinschaftDetailView: View {
                         .frame(maxWidth: .infinity)
                         .font(.headline)
                 }
-                .disabled(nichtVerrechnetMenge <= 0 || (gemeinschaft.bezugsparteien ?? []).isEmpty)
+                .disabled(
+                    nichtVerrechnetMenge <= 0 ||
+                    (gemeinschaft.bezugsparteien ?? []).isEmpty ||
+                    (gemeinschaft.bezugsparteien ?? []).reduce(Decimal(0)) { $0 + $1.anteil } != 100
+                )
+            } footer: {
+                let summe = (gemeinschaft.bezugsparteien ?? []).reduce(Decimal(0)) { $0 + $1.anteil }
+                if summe != 100 {
+                    Text("Die Anteile der Bezugsparteien müssen exakt 100 % ergeben (aktuell: \(summe.formatted()) %).")
+                        .foregroundStyle(.red)
+                }
             }
         }
         .navigationTitle(gemeinschaft.bezeichnung)
@@ -183,41 +193,57 @@ struct StromgemeinschaftDetailView: View {
     }
 
     private func erstelleStromabrechnung() {
+        let sortiertParteien = (gemeinschaft.bezugsparteien ?? []).sorted(by: { $0.name < $1.name })
+
+        // Voraussetzung: Die Anteile aller Bezugsparteien müssen exakt 100 % ergeben.
+        // Andernfalls wäre die proportionale Aufteilung rechnerisch falsch.
+        let summeAnteile = sortiertParteien.reduce(Decimal(0)) { $0 + $1.anteil }
+        guard summeAnteile == 100 else { return }
+
+        // Werte vor dem Insert sichern – nach modelContext.insert() würden die
+        // berechneten Properties nichtVerrechnetBetrag/-Menge sofort 0 zurückgeben,
+        // weil die neue Abrechnung die Differenz bereits ausgleicht.
+        let gesamtBetrag = nichtVerrechnetBetrag
+        let gesamtMenge  = nichtVerrechnetMenge
+
+        // Voraussetzung: Es gibt einen offenen (noch nicht abgerechneten) Betrag.
+        guard gesamtBetrag > 0, gesamtMenge > 0 else { return }
+
+        // Zeitraum: Frühestes Von / Spätestes Bis über alle Stromrechnungen.
+        let rechnungen = gemeinschaft.stromrechnungen ?? []
+        let zeitraumVon = rechnungen.map(\.abrechnungszeitraumVon).min() ?? .now
+        let zeitraumBis = rechnungen.map(\.abrechnungszeitraumBis).max() ?? .now
+
         let abrechnung = Stromabrechnung(
             datum: .now,
-            abrechnungszeitraumVon: (gemeinschaft.stromrechnungen ?? [])
-                .map(\.abrechnungszeitraumVon).min() ?? .now,
-            abrechnungszeitraumBis: (gemeinschaft.stromrechnungen ?? [])
-                .map(\.abrechnungszeitraumBis).max() ?? .now,
-            abrechnungsbetrag: nichtVerrechnetBetrag,
-            abrechnungsbezugsmenge: nichtVerrechnetMenge,
+            abrechnungszeitraumVon: zeitraumVon,
+            abrechnungszeitraumBis: zeitraumBis,
+            abrechnungsbetrag: gesamtBetrag,
+            abrechnungsbezugsmenge: gesamtMenge,
             stromgemeinschaft: gemeinschaft
         )
         modelContext.insert(abrechnung)
 
-        // Parteienabrechungen im Verhältnis der Anteile erstellen
-        let summeAnteile = (gemeinschaft.bezugsparteien ?? []).reduce(Decimal(0)) { $0 + $1.anteil }
-        guard summeAnteile > 0 else { return }
-
-        var restBetrag = nichtVerrechnetBetrag
-        var restMenge = nichtVerrechnetMenge
-        let sortiertParteien = (gemeinschaft.bezugsparteien ?? []).sorted(by: { $0.name < $1.name })
+        // Parteienabrechungen proportional zu den Anteilen aufteilen (Basis: 100 %).
+        // Der letzte Eintrag erhält den verbleibenden Rest, damit Betrag und Menge
+        // in der Summe exakt übereinstimmen und keine Rundungsdifferenzen entstehen.
+        var restBetrag = gesamtBetrag
+        var restMenge  = gesamtMenge
 
         for (idx, partei) in sortiertParteien.enumerated() {
             let istLetzte = idx == sortiertParteien.count - 1
-            let quotient = partei.anteil / summeAnteile
 
-            // Letzter Partei den Rest zuweisen, damit Summe exakt stimmt
             let parteiBetrag: Decimal
             let parteiBezugsmenge: Decimal
+
             if istLetzte {
-                parteiBetrag = restBetrag
+                parteiBetrag      = restBetrag
                 parteiBezugsmenge = restMenge
             } else {
-                parteiBetrag = (nichtVerrechnetBetrag * quotient).rounded(scale: 2)
-                parteiBezugsmenge = (nichtVerrechnetMenge * quotient).rounded(scale: 3)
+                parteiBetrag      = (gesamtBetrag * partei.anteil / 100).rounded(scale: 2)
+                parteiBezugsmenge = (gesamtMenge  * partei.anteil / 100).rounded(scale: 3)
                 restBetrag -= parteiBetrag
-                restMenge -= parteiBezugsmenge
+                restMenge  -= parteiBezugsmenge
             }
 
             let pa = Parteienabrechnung(
