@@ -2,8 +2,6 @@
 //  StromabrechnungenApp.swift
 //  Stromabrechnungen
 //
-//  Created by Thomas Süssli on 18.02.2026.
-//
 
 import SwiftUI
 import SwiftData
@@ -12,10 +10,13 @@ import SwiftData
 struct StromabrechnungenApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Stromgemeinschaft.self,
+            Stromrechnung.self,
+            Stromabrechnung.self,
+            Bezugspartei.self,
+            Parteienabrechnung.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
