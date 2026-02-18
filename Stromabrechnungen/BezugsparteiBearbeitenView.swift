@@ -20,7 +20,7 @@ struct BezugsparteiBearbeitenView: View {
 
     // Summe der anderen Parteien (ohne die aktuell bearbeitete)
     private var summeAndere: Decimal {
-        gemeinschaft.bezugsparteien
+        (gemeinschaft.bezugsparteien ?? [])
             .filter { $0.persistentModelID != partei?.persistentModelID }
             .reduce(0) { $0 + $1.anteil }
     }

@@ -16,7 +16,12 @@ struct StromabrechnungenApp: App {
             Bezugspartei.self,
             Parteienabrechnung.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false, cloudKitDatabase: .none)
+        let modelConfiguration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false,
+            cloudKitDatabase: .automatic
+//            cloudKitDatabase: .private("iCloud.com.suessli.Stromabrechnungen") // suessli.Stromabrechnungen
+        )
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {

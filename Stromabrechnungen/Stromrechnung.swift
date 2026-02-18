@@ -3,12 +3,12 @@ import SwiftData
 
 @Model
 final class Stromrechnung {
-    var rechnungssteller: String
-    var abrechnungszeitraumVon: Date
-    var abrechnungszeitraumBis: Date
-    var rechnungsdatum: Date
-    var rechnungsbetrag: Decimal
-    var strombezugsmenge: Decimal
+    var rechnungssteller: String = ""
+    var abrechnungszeitraumVon: Date = Date.distantPast
+    var abrechnungszeitraumBis: Date = Date.distantPast
+    var rechnungsdatum: Date = Date.distantPast
+    var rechnungsbetrag: Decimal = 0
+    var strombezugsmenge: Decimal = 0
 
     var stromgemeinschaft: Stromgemeinschaft?
 

@@ -19,22 +19,22 @@ struct StromgemeinschaftDetailView: View {
 
     /// [1] Summe Rechnungsbeträge aller Stromrechnungen
     private var gesamtRechnungsbetrag: Decimal {
-        gemeinschaft.stromrechnungen.reduce(0) { $0 + $1.rechnungsbetrag }
+        (gemeinschaft.stromrechnungen ?? []).reduce(0) { $0 + $1.rechnungsbetrag }
     }
 
     /// [2] Summe Strombezugsmengen aller Stromrechnungen
     private var gesamtStrombezugsmenge: Decimal {
-        gemeinschaft.stromrechnungen.reduce(0) { $0 + $1.strombezugsmenge }
+        (gemeinschaft.stromrechnungen ?? []).reduce(0) { $0 + $1.strombezugsmenge }
     }
 
     /// [5] Summe Abrechnungsbeträge auf Stromabrechnungen
     private var gesamtAbrechnungsbetrag: Decimal {
-        gemeinschaft.stromabrechnungen.reduce(0) { $0 + $1.abrechnungsbetrag }
+        (gemeinschaft.stromabrechnungen ?? []).reduce(0) { $0 + $1.abrechnungsbetrag }
     }
 
     /// [4] Summe Abrechnungsbezugsmengen auf Stromabrechnungen
     private var gesamtAbrechnungsbezugsmenge: Decimal {
-        gemeinschaft.stromabrechnungen.reduce(0) { $0 + $1.abrechnungsbezugsmenge }
+        (gemeinschaft.stromabrechnungen ?? []).reduce(0) { $0 + $1.abrechnungsbezugsmenge }
     }
 
     /// Nicht verrechneter Rechnungsbetrag ([1] - [5])
@@ -83,7 +83,7 @@ struct StromgemeinschaftDetailView: View {
             } header: {
                 Text("Bisherige Bezüge (Stromrechnungen)")
             } footer: {
-                Text("Summen über alle \(gemeinschaft.stromrechnungen.count) Stromrechnungen dieser Gemeinschaft.")
+                Text("Summen über alle \(gemeinschaft.stromrechnungen?.count ?? 0) Stromrechnungen dieser Gemeinschaft.")
             }
 
             // MARK: Abschnitt: Nicht verrechnete Bezüge
@@ -111,7 +111,7 @@ struct StromgemeinschaftDetailView: View {
 
             // MARK: Abschnitt: Bezugsparteien
             Section {
-                ForEach(gemeinschaft.bezugsparteien.sorted(by: { $0.name < $1.name })) { partei in
+                ForEach((gemeinschaft.bezugsparteien ?? []).sorted(by: { $0.name < $1.name })) { partei in
                     NavigationLink(destination: BezugsparteiBearbeitenView(gemeinschaft: gemeinschaft, partei: partei)) {
                         HStack {
                             Text(partei.name)
@@ -125,7 +125,7 @@ struct StromgemeinschaftDetailView: View {
                 .onDelete(perform: bezugsparteiLoeschen)
 
                 // Summen-Zeile
-                let summeAnteile = gemeinschaft.bezugsparteien.reduce(Decimal(0)) { $0 + $1.anteil }
+                let summeAnteile = (gemeinschaft.bezugsparteien ?? []).reduce(Decimal(0)) { $0 + $1.anteil }
                 HStack {
                     Text("Summe")
                         .bold()
@@ -153,7 +153,7 @@ struct StromgemeinschaftDetailView: View {
                         .frame(maxWidth: .infinity)
                         .font(.headline)
                 }
-                .disabled(nichtVerrechnetMenge <= 0 || gemeinschaft.bezugsparteien.isEmpty)
+                .disabled(nichtVerrechnetMenge <= 0 || (gemeinschaft.bezugsparteien ?? []).isEmpty)
             }
         }
         .navigationTitle(gemeinschaft.bezeichnung)
@@ -176,7 +176,7 @@ struct StromgemeinschaftDetailView: View {
     // MARK: Aktionen
 
     private func bezugsparteiLoeschen(at offsets: IndexSet) {
-        let sortierte = gemeinschaft.bezugsparteien.sorted(by: { $0.name < $1.name })
+        let sortierte = (gemeinschaft.bezugsparteien ?? []).sorted(by: { $0.name < $1.name })
         for index in offsets {
             modelContext.delete(sortierte[index])
         }
@@ -185,9 +185,9 @@ struct StromgemeinschaftDetailView: View {
     private func erstelleStromabrechnung() {
         let abrechnung = Stromabrechnung(
             datum: .now,
-            abrechnungszeitraumVon: gemeinschaft.stromrechnungen
+            abrechnungszeitraumVon: (gemeinschaft.stromrechnungen ?? [])
                 .map(\.abrechnungszeitraumVon).min() ?? .now,
-            abrechnungszeitraumBis: gemeinschaft.stromrechnungen
+            abrechnungszeitraumBis: (gemeinschaft.stromrechnungen ?? [])
                 .map(\.abrechnungszeitraumBis).max() ?? .now,
             abrechnungsbetrag: nichtVerrechnetBetrag,
             abrechnungsbezugsmenge: nichtVerrechnetMenge,
@@ -196,12 +196,12 @@ struct StromgemeinschaftDetailView: View {
         modelContext.insert(abrechnung)
 
         // Parteienabrechungen im Verhältnis der Anteile erstellen
-        let summeAnteile = gemeinschaft.bezugsparteien.reduce(Decimal(0)) { $0 + $1.anteil }
+        let summeAnteile = (gemeinschaft.bezugsparteien ?? []).reduce(Decimal(0)) { $0 + $1.anteil }
         guard summeAnteile > 0 else { return }
 
         var restBetrag = nichtVerrechnetBetrag
         var restMenge = nichtVerrechnetMenge
-        let sortiertParteien = gemeinschaft.bezugsparteien.sorted(by: { $0.name < $1.name })
+        let sortiertParteien = (gemeinschaft.bezugsparteien ?? []).sorted(by: { $0.name < $1.name })
 
         for (idx, partei) in sortiertParteien.enumerated() {
             let istLetzte = idx == sortiertParteien.count - 1

@@ -16,7 +16,7 @@ struct StromrechnungenListeView: View {
     @State private var zeigePDFImport = false
 
     private var sortierteRechnungen: [Stromrechnung] {
-        gemeinschaft.stromrechnungen.sorted { $0.rechnungsdatum > $1.rechnungsdatum }
+        (gemeinschaft.stromrechnungen ?? []).sorted { $0.rechnungsdatum > $1.rechnungsdatum }
     }
 
     var body: some View {

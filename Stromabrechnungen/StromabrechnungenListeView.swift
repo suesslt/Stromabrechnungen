@@ -13,7 +13,7 @@ struct StromabrechnungenListeView: View {
     let gemeinschaft: Stromgemeinschaft
 
     private var sortierteAbrechnungen: [Stromabrechnung] {
-        gemeinschaft.stromabrechnungen.sorted { $0.datum > $1.datum }
+        (gemeinschaft.stromabrechnungen ?? []).sorted { $0.datum > $1.datum }
     }
 
     var body: some View {
@@ -36,9 +36,9 @@ struct StromabrechnungenListeView: View {
                                 .monospacedDigit()
                         }
 
-                        if !abrechnung.parteienabrechungen.isEmpty {
-                            DisclosureGroup("Parteienabrechungen (\(abrechnung.parteienabrechungen.count))") {
-                                ForEach(abrechnung.parteienabrechungen) { pa in
+                        if !(abrechnung.parteienabrechungen ?? []).isEmpty {
+                            DisclosureGroup("Parteienabrechungen (\((abrechnung.parteienabrechungen ?? []).count))") {
+                                ForEach(abrechnung.parteienabrechungen ?? []) { pa in
                                     HStack {
                                         Text(pa.bezugspartei?.name ?? "–")
                                         Spacer()

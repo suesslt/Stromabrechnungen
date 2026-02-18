@@ -3,16 +3,16 @@ import SwiftData
 
 @Model
 final class Stromabrechnung {
-    var datum: Date
-    var abrechnungszeitraumVon: Date
-    var abrechnungszeitraumBis: Date
-    var abrechnungsbetrag: Decimal
-    var abrechnungsbezugsmenge: Decimal
+    var datum: Date = Date.distantPast
+    var abrechnungszeitraumVon: Date = Date.distantPast
+    var abrechnungszeitraumBis: Date = Date.distantPast
+    var abrechnungsbetrag: Decimal = 0
+    var abrechnungsbezugsmenge: Decimal = 0
 
     var stromgemeinschaft: Stromgemeinschaft?
 
     @Relationship(deleteRule: .cascade, inverse: \Parteienabrechnung.stromabrechnung)
-    var parteienabrechungen: [Parteienabrechnung] = []
+    var parteienabrechungen: [Parteienabrechnung]?
 
     init(
         datum: Date = .now,
