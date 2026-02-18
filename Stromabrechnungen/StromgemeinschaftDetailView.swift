@@ -112,7 +112,7 @@ struct StromgemeinschaftDetailView: View {
             // MARK: Abschnitt: Bezugsparteien
             Section {
                 ForEach((gemeinschaft.bezugsparteien ?? []).sorted(by: { $0.name < $1.name })) { partei in
-                    NavigationLink(destination: BezugsparteiBearbeitenView(gemeinschaft: gemeinschaft, partei: partei)) {
+                    NavigationLink(destination: BezugsparteiDetailView(gemeinschaft: gemeinschaft, partei: partei)) {
                         HStack {
                             Text(partei.name)
                             Spacer()

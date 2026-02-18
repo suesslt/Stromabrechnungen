@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B5D3D9092F45F12B00DD894F /* BezugsparteiDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5D3D9082F45F12B00DD894F /* BezugsparteiDetailView.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		B57D4DD82F4551270096B1DB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +31,7 @@
 		B57D4DC62F4551260096B1DB /* Stromabrechnungen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Stromabrechnungen.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B57D4DD72F4551270096B1DB /* StromabrechnungenTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StromabrechnungenTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B57D4DE12F4551270096B1DB /* StromabrechnungenUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StromabrechnungenUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5D3D9082F45F12B00DD894F /* BezugsparteiDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BezugsparteiDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -92,6 +97,7 @@
 				B57D4DDA2F4551270096B1DB /* StromabrechnungenTests */,
 				B57D4DE42F4551270096B1DB /* StromabrechnungenUITests */,
 				B57D4DC72F4551260096B1DB /* Products */,
+				B5D3D9082F45F12B00DD894F /* BezugsparteiDetailView.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -249,6 +255,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5D3D9092F45F12B00DD894F /* BezugsparteiDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

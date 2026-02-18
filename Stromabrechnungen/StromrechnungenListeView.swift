@@ -18,7 +18,7 @@ struct StromrechnungenListeView: View {
     @State private var zeigeLoeschenBestaetigung = false
 
     private var sortierteRechnungen: [Stromrechnung] {
-        (gemeinschaft.stromrechnungen ?? []).sorted { $0.rechnungsdatum > $1.rechnungsdatum }
+        (gemeinschaft.stromrechnungen ?? []).sorted { $0.abrechnungszeitraumVon < $1.abrechnungszeitraumVon }
     }
 
     var body: some View {
