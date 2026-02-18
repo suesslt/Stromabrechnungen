@@ -81,19 +81,19 @@ struct StromgemeinschaftDetailView: View {
                     Label("Alle Stromrechnungen anzeigen", systemImage: "doc.text.magnifyingglass")
                 }
             } header: {
-                Text("Bisherige Bezüge")
+                Text("Bisherige Bezüge (Stromrechnungen)")
             } footer: {
                 Text("Summen über alle \(gemeinschaft.stromrechnungen.count) Stromrechnungen dieser Gemeinschaft.")
             }
 
             // MARK: Abschnitt: Nicht verrechnete Bezüge
             Section {
-                LabeledContent("Nicht verr. Bezugsmenge") {
+                LabeledContent("Nicht verrechnete Bezugsmenge") {
                     Text("\(nichtVerrechnetMenge.formatted()) kWh")
                         .monospacedDigit()
                         .foregroundStyle(nichtVerrechnetMenge > 0 ? .orange : .secondary)
                 }
-                LabeledContent("Nicht verr. Betrag") {
+                LabeledContent("Nicht verrechneter Betrag") {
                     Text(nichtVerrechnetBetrag, format: .currency(code: "CHF"))
                         .monospacedDigit()
                         .foregroundStyle(nichtVerrechnetBetrag > 0 ? .orange : .secondary)
@@ -106,7 +106,7 @@ struct StromgemeinschaftDetailView: View {
             } header: {
                 Text("Nicht verrechnete Bezüge")
             } footer: {
-                Text("Differenz zwischen Stromrechnungen [1,2] und Stromabrechnungen [4,5].")
+                Text("Differenz zwischen Stromrechnungen und Stromabrechnungen.")
             }
 
             // MARK: Abschnitt: Bezugsparteien
