@@ -4,4 +4,19 @@
    <FileRef
       location = "self:">
    </FileRef>
+   <FileRef
+      location = "group:ModelsStromgemeinschaft.swift">
+   </FileRef>
+   <FileRef
+      location = "group:ModelsStromrechnung.swift">
+   </FileRef>
+   <FileRef
+      location = "group:ModelsStromabrechnung.swift">
+   </FileRef>
+   <FileRef
+      location = "group:Bezugspartei.swift">
+   </FileRef>
+   <FileRef
+      location = "group:ModelsParteienabrechnung.swift">
+   </FileRef>
 </Workspace>
