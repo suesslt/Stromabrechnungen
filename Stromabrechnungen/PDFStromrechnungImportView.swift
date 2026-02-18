@@ -33,6 +33,9 @@ struct PDFStromrechnungImportView: View {
 
     @State private var felderSichtbar = false
 
+    @State private var zeigeUeberlagerungAlert = false
+    @State private var ueberlagerungsText = ""
+
     // MARK: Body
 
     var body: some View {
@@ -118,7 +121,7 @@ struct PDFStromrechnungImportView: View {
                 }
                 if felderSichtbar {
                     ToolbarItem(placement: .confirmationAction) {
-                        Button("Speichern") { speichern() }
+                        Button("Speichern") { speichernMitPruefung() }
                             .disabled(!eingabeGueltig)
                     }
                 }
@@ -129,6 +132,12 @@ struct PDFStromrechnungImportView: View {
                 allowsMultipleSelection: false
             ) { result in
                 behandleDateiAuswahl(result)
+            }
+            .alert("Zeitraum-Überlagerung", isPresented: $zeigeUeberlagerungAlert) {
+                Button("Trotzdem speichern", role: .destructive) { speichern() }
+                Button("Abbrechen", role: .cancel) { }
+            } message: {
+                Text(ueberlagerungsText)
             }
         }
     }
@@ -203,6 +212,19 @@ struct PDFStromrechnungImportView: View {
         }
         if let bis = formatter.date(from: erkannt.abrechnungszeitraumBis) {
             zeitraumBis = bis
+        }
+    }
+
+    private func speichernMitPruefung() {
+        let ueberlagerungen = gemeinschaft.zeitraumUeberlagerungen(
+            von: zeitraumVon,
+            bis: zeitraumBis
+        )
+        if let erste = ueberlagerungen.first {
+            ueberlagerungsText = erste.erklaerung(neuerVon: zeitraumVon, neuerBis: zeitraumBis)
+            zeigeUeberlagerungAlert = true
+        } else {
+            speichern()
         }
     }
 

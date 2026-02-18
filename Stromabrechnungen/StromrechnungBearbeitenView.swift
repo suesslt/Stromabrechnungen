@@ -22,6 +22,9 @@ struct StromrechnungBearbeitenView: View {
     @State private var rechnungsbetrag = ""
     @State private var strombezugsmenge = ""
 
+    @State private var zeigeUeberlagerungAlert = false
+    @State private var ueberlagerungsText = ""
+
     var body: some View {
         NavigationStack {
             Form {
@@ -46,11 +49,17 @@ struct StromrechnungBearbeitenView: View {
                     Button("Abbrechen") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Speichern") { speichern() }
+                    Button("Speichern") { speichernMitPruefung() }
                         .disabled(!eingabeGueltig)
                 }
             }
             .onAppear { vorbelegen() }
+            .alert("Zeitraum-Überlagerung", isPresented: $zeigeUeberlagerungAlert) {
+                Button("Trotzdem speichern", role: .destructive) { speichern() }
+                Button("Abbrechen", role: .cancel) { }
+            } message: {
+                Text(ueberlagerungsText)
+            }
         }
     }
 
@@ -68,6 +77,20 @@ struct StromrechnungBearbeitenView: View {
         zeitraumBis = r.abrechnungszeitraumBis
         rechnungsbetrag = "\(r.rechnungsbetrag)"
         strombezugsmenge = "\(r.strombezugsmenge)"
+    }
+
+    private func speichernMitPruefung() {
+        let ueberlagerungen = gemeinschaft.zeitraumUeberlagerungen(
+            von: zeitraumVon,
+            bis: zeitraumBis,
+            ausgenommenId: rechnung?.persistentModelID
+        )
+        if let erste = ueberlagerungen.first {
+            ueberlagerungsText = erste.erklaerung(neuerVon: zeitraumVon, neuerBis: zeitraumBis)
+            zeigeUeberlagerungAlert = true
+        } else {
+            speichern()
+        }
     }
 
     private func speichern() {
