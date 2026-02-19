@@ -94,6 +94,43 @@ struct QRBill {
     let referenceType: QRReferenceType
     let reference: String?
     let additionalInfo: String?
+
+    // MARK: - Factory aus SwiftData-Modellen
+    /// Erstellt einen QRBill direkt aus einer Parteienabrechnung.
+    /// - Parameters:
+    ///   - parteienabrechnung: Die abgerechnete Parteienabrechnung (enthält Betrag & Bezugspartei)
+    ///   - creditor: Stammdaten-Adresse (z.B. aus @AppStorage gespeichert)
+    ///   - additionalInfo: Optionaler Zusatztext auf der Rechnung (z.B. "Rechnung Nr. 42")
+    static func fromParteienabrechnung(
+        _ parteienabrechnung: Parteienabrechnung,
+        creditor: QRAddress,
+        additionalInfo: String? = nil
+    ) -> QRBill? {
+        guard
+            let gemeinschaft = parteienabrechnung.stromabrechnung?.stromgemeinschaft,
+            let bezugspartei = parteienabrechnung.bezugspartei
+        else { return nil }
+
+        let debtor = QRAddress(
+            name: bezugspartei.name,
+            street: bezugspartei.street,
+            houseNumber: bezugspartei.houseNumber,
+            postalCode: bezugspartei.postalCode,
+            city: bezugspartei.city,
+            countryCode: bezugspartei.countryCode
+        )
+
+        return QRBill(
+            iban: gemeinschaft.abrechnungskonto.replacingOccurrences(of: " ", with: ""),
+            creditor: creditor,
+            amount: Double(truncating: parteienabrechnung.betrag as NSDecimalNumber),
+            currency: "CHF",
+            debtor: debtor,
+            referenceType: .none,
+            reference: nil,
+            additionalInfo: additionalInfo
+        )
+    }
     
     // MARK: - Algorithmus zur Payload-Generierung
     func generatePayload() -> String {
