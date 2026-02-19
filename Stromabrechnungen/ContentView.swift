@@ -3,8 +3,8 @@
 //  Stromabrechnungen
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
@@ -113,7 +113,8 @@ struct StromgemeinschaftKachel: View {
         .frame(maxWidth: .infinity, minHeight: 160)
         .background {
             if let bildData = gemeinschaft.bild,
-               let uiImage = UIImage(data: bildData) {
+                let uiImage = UIImage(data: bildData)
+            {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFill()
@@ -132,11 +133,14 @@ struct StromgemeinschaftKachel: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: [
-            Stromgemeinschaft.self,
-            Stromrechnung.self,
-            Stromabrechnung.self,
-            Bezugspartei.self,
-            Parteienabrechnung.self,
-        ], inMemory: true)
+        .modelContainer(
+            for: [
+                Stromgemeinschaft.self,
+                Stromrechnung.self,
+                Stromabrechnung.self,
+                Bezugspartei.self,
+                Parteienabrechnung.self,
+            ],
+            inMemory: true
+        )
 }
