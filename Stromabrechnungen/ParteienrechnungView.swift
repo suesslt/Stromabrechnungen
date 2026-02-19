@@ -11,6 +11,7 @@ struct ParteienrechnungView: View {
     let rechnung: Parteienrechnung
 
     @AppStorage("kreditorAdresse") private var kreditor: QRAddress = .empty
+    @State private var pdfItem: PDFShareItem? = nil
 
     // MARK: - Berechnete Hilfsgrössen
 
@@ -36,6 +37,22 @@ struct ParteienrechnungView: View {
         f.maximumFractionDigits = 2
         return f
     }()
+
+    // MARK: - PDF erzeugen & teilen
+
+    private func generateAndSharePDF() {
+        guard let bill else { return }
+        let renderer = RechnungPDFRenderer(
+            rechnung: rechnung,
+            kreditor: kreditor,
+            bill: bill
+        )
+        let data = renderer.render()
+        let filename = rechnungstitel
+            .replacingOccurrences(of: " ", with: "_")
+            .replacingOccurrences(of: "–", with: "-")
+        pdfItem = PDFShareItem(data: data, filename: "\(filename).pdf")
+    }
 
     // MARK: - Body
 
@@ -173,5 +190,45 @@ struct ParteienrechnungView: View {
         }
         .navigationTitle(rechnung.bezugspartei?.name ?? "Rechnung")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    generateAndSharePDF()
+                } label: {
+                    Label("PDF herunterladen", systemImage: "arrow.down.document")
+                }
+                .disabled(bill == nil)
+            }
+        }
+        .sheet(item: $pdfItem) { item in
+            ShareSheet(activityItems: [item.url])
+                .ignoresSafeArea()
+        }
     }
 }
+// MARK: - Hilftypen für PDF-Sharing
+
+/// Wrapper, der die PDF-Daten in eine temporäre Datei schreibt,
+/// damit der System-ShareSheet eine echte URL erhält.
+private struct PDFShareItem: Identifiable {
+    let id = UUID()
+    let data: Data
+    let filename: String
+
+    var url: URL {
+        let tmp = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
+        try? data.write(to: tmp)
+        return tmp
+    }
+}
+
+private struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
