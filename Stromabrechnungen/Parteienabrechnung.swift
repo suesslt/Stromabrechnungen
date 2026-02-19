@@ -5,7 +5,6 @@ import SwiftData
 final class Parteienabrechnung {
     var betrag: Decimal = 0
     var bezugsmenge: Decimal = 0
-
     var stromabrechnung: Stromabrechnung?
     var bezugspartei: Bezugspartei?
 

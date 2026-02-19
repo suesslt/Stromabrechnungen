@@ -45,9 +45,6 @@ struct StromabrechnungenListeView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Schliessen") { dismiss() }
                 }
-                ToolbarItem(placement: .primaryAction) {
-                    EditButton()
-                }
             }
             .confirmationDialog(
                 "Stromabrechnung löschen?",

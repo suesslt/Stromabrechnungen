@@ -13,17 +13,38 @@ struct BezugsparteiDetailView: View {
     let partei: Bezugspartei
 
     @State private var zeigeBearbeiten = false
+    @State private var zeigeNeueRechnung = false
 
     // MARK: - Berechnete Werte
 
-    /// Bereits abgerechneter Betrag dieser Partei (Summe aller Parteienabrechungen)
-    private var abgerechnetBetrag: Decimal {
+    /// Summe aller Parteienabrechungs-Beträge
+    private var summeAbrechnungsBetrag: Decimal {
         (partei.parteienabrechungen ?? []).reduce(0) { $0 + $1.betrag }
     }
 
-    /// Bereits abgerechnete Bezugsmenge dieser Partei
-    private var abgerechnetMenge: Decimal {
+    /// Summe aller Parteienabrechungs-Bezugsmengen
+    private var summeAbrechnungsMenge: Decimal {
         (partei.parteienabrechungen ?? []).reduce(0) { $0 + $1.bezugsmenge }
+    }
+
+    /// Summe aller bereits in Rechnungen abgerechneten Beträge
+    private var summeRechnungsBetrag: Decimal {
+        (partei.parteienrechnungen ?? []).reduce(0) { $0 + $1.abgerechneterBetrag }
+    }
+
+    /// Summe aller bereits in Rechnungen abgerechneten Bezugsmengen
+    private var summeRechnungsMenge: Decimal {
+        (partei.parteienrechnungen ?? []).reduce(0) { $0 + $1.abgerechneteBezugsmenge }
+    }
+
+    /// Bereits abgerechneter Betrag = Abrechnungen minus gestellte Rechnungen
+    private var abgerechnetBetrag: Decimal {
+        summeAbrechnungsBetrag - summeRechnungsBetrag
+    }
+
+    /// Bereits abgerechnete Bezugsmenge = Abrechnungen minus gestellte Rechnungen
+    private var abgerechnetMenge: Decimal {
+        summeAbrechnungsMenge - summeRechnungsMenge
     }
 
     /// Nicht verrechneter Gesamtbetrag der Gemeinschaft
@@ -96,6 +117,34 @@ struct BezugsparteiDetailView: View {
                 }
             } header: {
                 Text("Bisher abgerechnet")
+            } footer: {
+                Text("Summe der Parteienabrechnungen abzüglich bereits gestellter Parteienrechnungen.")
+            }
+
+            // MARK: Parteienrechnungen
+            Section {
+                let rechnungen = (partei.parteienrechnungen ?? [])
+                    .sorted { $0.rechnungsdatum > $1.rechnungsdatum }
+
+                if rechnungen.isEmpty {
+                    Text("Noch keine Rechnungen vorhanden.")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(rechnungen) { rechnung in
+                        ParteienrechnungListItemView(rechnung: rechnung)
+                    }
+                    .onDelete { indexSet in
+                        rechnungenLoeschen(rechnungen: rechnungen, at: indexSet)
+                    }
+                }
+
+                Button {
+                    zeigeNeueRechnung = true
+                } label: {
+                    Label("Neue Rechnung erstellen", systemImage: "plus.circle")
+                }
+            } header: {
+                Text("Parteienrechnungen")
             }
         }
         .navigationTitle(partei.name)
@@ -106,6 +155,64 @@ struct BezugsparteiDetailView: View {
         }
         .sheet(isPresented: $zeigeBearbeiten) {
             BezugsparteiBearbeitenView(gemeinschaft: gemeinschaft, partei: partei)
+        }
+        .sheet(isPresented: $zeigeNeueRechnung) {
+            ParteienrechnungErstellenView(partei: partei)
+        }
+    }
+
+    // MARK: - Aktionen
+
+    private func rechnungenLoeschen(rechnungen: [Parteienrechnung], at indexSet: IndexSet) {
+        for index in indexSet {
+            modelContext.delete(rechnungen[index])
+        }
+    }
+}
+
+// MARK: - Listenzeile für eine Parteienrechnung
+
+private struct ParteienrechnungListItemView: View {
+    let rechnung: Parteienrechnung
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(rechnung.rechnungsdatum, style: .date)
+                    .font(.headline)
+                Spacer()
+                Text(rechnung.abgerechneterBetrag, format: .currency(code: "CHF"))
+                    .monospacedDigit()
+                    .bold()
+            }
+            HStack {
+                Text(
+                    "\(rechnung.rechnungszeitraumVon.formatted(date: .abbreviated, time: .omitted)) – \(rechnung.rechnungszeitraumBis.formatted(date: .abbreviated, time: .omitted))"
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                Spacer()
+                Text("\(rechnung.abgerechneteBezugsmenge.formatted()) kWh")
+                    .font(.caption)
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+            }
+            Text(rechnung.rechnungsstatus.rawValue)
+                .font(.caption2)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(statusFarbe(rechnung.rechnungsstatus).opacity(0.15))
+                .foregroundStyle(statusFarbe(rechnung.rechnungsstatus))
+                .clipShape(Capsule())
+        }
+        .padding(.vertical, 2)
+    }
+
+    private func statusFarbe(_ status: Rechnungsstatus) -> Color {
+        switch status {
+        case .offen:     return .orange
+        case .bezahlt:   return .green
+        case .storniert: return .red
         }
     }
 }
