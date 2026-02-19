@@ -44,25 +44,15 @@ struct StromabrechnungListItemView: View {
 
             // MARK: Kennzahlen
             HStack(spacing: 16) {
-                Label {
-                    Text("\(Self.mengenFormatter.string(from: abrechnung.abrechnungsbezugsmenge as NSDecimalNumber) ?? "") kWh")
-                        .monospacedDigit()
-                        .foregroundStyle(.primary)
-                } icon: {
-                    Image(systemName: "bolt")
-                        .foregroundStyle(.yellow)
-                }
-                .font(.subheadline)
+                Text(
+                    "\(Self.mengenFormatter.string(from: abrechnung.abrechnungsbezugsmenge as NSDecimalNumber) ?? "") kWh"
+                )
+                .monospacedDigit()
+                .foregroundStyle(.primary)
 
-                Label {
-                    Text(Self.chfFormatter.string(from: abrechnung.abrechnungsbetrag as NSDecimalNumber) ?? "")
-                        .monospacedDigit()
-                        .foregroundStyle(.primary)
-                } icon: {
-                    Image(systemName: "francsign")
-                        .foregroundStyle(.green)
-                }
-                .font(.subheadline)
+                Text(Self.chfFormatter.string(from: abrechnung.abrechnungsbetrag as NSDecimalNumber) ?? "")
+                    .monospacedDigit()
+                    .foregroundStyle(.primary)
             }
 
             // MARK: Parteienabrechungen (aufklappbar)
@@ -101,10 +91,12 @@ struct StromabrechnungListItemView: View {
                                     .font(.subheadline)
                                 Spacer()
                                 VStack(alignment: .trailing, spacing: 2) {
-                                    Text("\(Self.mengenFormatter.string(from: pa.bezugsmenge as NSDecimalNumber) ?? "") kWh")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                        .monospacedDigit()
+                                    Text(
+                                        "\(Self.mengenFormatter.string(from: pa.bezugsmenge as NSDecimalNumber) ?? "") kWh"
+                                    )
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .monospacedDigit()
                                     Text(Self.chfFormatter.string(from: pa.betrag as NSDecimalNumber) ?? "")
                                         .font(.subheadline)
                                         .monospacedDigit()

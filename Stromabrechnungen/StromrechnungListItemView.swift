@@ -30,44 +30,34 @@ struct StromrechnungListItemView: View {
 
             // MARK: Kopfzeile
             VStack(alignment: .leading, spacing: 2) {
-                Text(rechnung.rechnungssteller)
-                    .font(.headline)
                 Text(
                     "\(rechnung.abrechnungszeitraumVon.formatted(date: .abbreviated, time: .omitted)) – \(rechnung.abrechnungszeitraumBis.formatted(date: .abbreviated, time: .omitted))"
                 )
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                Text(rechnung.rechnungsdatum, style: .date)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                .font(.headline)
+                .foregroundStyle(.primary)
+                HStack {
+                    Text(rechnung.rechnungsdatum, style: .date)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(rechnung.rechnungssteller)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
             .padding(.bottom, 6)
 
-            // MARK: Kennzahlen
             HStack(spacing: 16) {
-                Label {
-                    Text(
-                        "\(Self.mengenFormatter.string(from: rechnung.strombezugsmenge as NSDecimalNumber) ?? "") kWh"
-                    )
-                    .monospacedDigit()
-                    .foregroundStyle(.primary)
-                } icon: {
-                    Image(systemName: "bolt")
-                        .foregroundStyle(.yellow)
-                }
-                .font(.subheadline)
+                Text(
+                    "\(Self.mengenFormatter.string(from: rechnung.strombezugsmenge as NSDecimalNumber) ?? "") kWh"
+                )
+                .monospacedDigit()
+                .foregroundStyle(.primary)
 
-                Label {
-                    Text(
-                        Self.chfFormatter.string(from: rechnung.rechnungsbetrag as NSDecimalNumber) ?? ""
-                    )
-                    .monospacedDigit()
-                    .foregroundStyle(.primary)
-                } icon: {
-                    Image(systemName: "francsign")
-                        .foregroundStyle(.green)
-                }
-                .font(.subheadline)
+                Text(
+                    Self.chfFormatter.string(from: rechnung.rechnungsbetrag as NSDecimalNumber) ?? ""
+                )
+                .monospacedDigit()
+                .foregroundStyle(.primary)
             }
         }
         .padding(.vertical, 4)
