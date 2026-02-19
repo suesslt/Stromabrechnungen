@@ -27,6 +27,16 @@ struct StromgemeinschaftDetailView: View {
         (gemeinschaft.stromrechnungen ?? []).reduce(0) { $0 + $1.strombezugsmenge }
     }
 
+    /// Frühestes „Von"-Datum über alle Stromrechnungen (nil wenn keine vorhanden)
+    private var bezugszeitraumVon: Date? {
+        (gemeinschaft.stromrechnungen ?? []).map(\.abrechnungszeitraumVon).min()
+    }
+
+    /// Spätestes „Bis"-Datum über alle Stromrechnungen (nil wenn keine vorhanden)
+    private var bezugszeitraumBis: Date? {
+        (gemeinschaft.stromrechnungen ?? []).map(\.abrechnungszeitraumBis).max()
+    }
+
     /// [5] Summe Abrechnungsbeträge auf Stromabrechnungen
     private var gesamtAbrechnungsbetrag: Decimal {
         (gemeinschaft.stromabrechnungen ?? []).reduce(0) { $0 + $1.abrechnungsbetrag }
@@ -67,6 +77,13 @@ struct StromgemeinschaftDetailView: View {
 
             // MARK: Abschnitt: Bisherige Bezüge [3]
             Section {
+                if let von = bezugszeitraumVon, let bis = bezugszeitraumBis {
+                    LabeledContent("Zeitraum") {
+                        Text("\(von.formatted(date: .abbreviated, time: .omitted)) – \(bis.formatted(date: .abbreviated, time: .omitted))")
+                            .monospacedDigit()
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 LabeledContent("Gesamtbezug") {
                     Text("\(gesamtStrombezugsmenge.formatted()) kWh")
                         .monospacedDigit()
