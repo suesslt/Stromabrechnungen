@@ -20,5 +20,51 @@
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "D19CBD46-79E4-4DA8-9F50-1AE56BF0B42C"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Stromabrechnungen/ParteienrechnungErstellenView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "83"
+            endingLineNumber = "83"
+            landmarkName = "body"
+            landmarkType = "24">
+            <Locations>
+               <Location
+                  uuid = "D19CBD46-79E4-4DA8-9F50-1AE56BF0B42C - 25cd7243e710a398"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 () -&gt; SwiftUI.TupleView&lt;(SwiftUI.Section&lt;SwiftUI.Text, SwiftUI.TupleView&lt;(SwiftUI.DatePicker&lt;SwiftUI.Text&gt;, SwiftUI.DatePicker&lt;SwiftUI.Text&gt;, SwiftUI.DatePicker&lt;SwiftUI.Text&gt;)&gt;, SwiftUI.EmptyView&gt;, SwiftUI.Section&lt;SwiftUI.Text, SwiftUI.TupleView&lt;(SwiftUI.LabeledContent&lt;SwiftUI.Text, &lt;&lt;opaque return type of SwiftUI.View.keyboardType(__C.UIKeyboardType) -&gt; some&gt;&gt;.0&gt;, SwiftUI.LabeledContent&lt;SwiftUI.Text, &lt;&lt;opaque return type of SwiftUI.View.keyboardType(__C.UIKeyboardType) -&gt; some&gt;&gt;.0&gt;)&gt;, SwiftUI.Text&gt;, SwiftUI.Section&lt;SwiftUI.Text, SwiftUI.Picker&lt;SwiftUI.Text, Stromabrechnungen.Rechnungsstatus, SwiftUI.ForEach&lt;Swift.Array&lt;Stromabrechnungen.Rechnungsstatus&gt;, Stromabrechnungen.Rechnungsstatus, &lt;&lt;opaque return type of SwiftUI.View.tag&lt;&#x3c4;_0_0 where &#x3c4;_1_0: Swift.Hashable&gt;(_: &#x3c4;_1_0, includeOptional: Swift.Bool) -&gt; some&gt;&gt;.0&gt;&gt;, SwiftUI.EmptyView&gt;)&gt; in closure #1 () -&gt; &lt;&lt;opaque return type of SwiftUI.View.onAppear(perform: Swift.Optional&lt;() -&gt; ()&gt;) -&gt; some&gt;&gt;.0 in Stromabrechnungen.ParteienrechnungErstellenView.body.getter : some"
+                  moduleName = "Stromabrechnungen.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/thomassussli/Library/Mobile%20Documents/com~apple~CloudDocs/XCode/Stromabrechnungen/Stromabrechnungen/ParteienrechnungErstellenView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "83"
+                  endingLineNumber = "83">
+               </Location>
+               <Location
+                  uuid = "D19CBD46-79E4-4DA8-9F50-1AE56BF0B42C - 430b226fad5dbc"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #5 () -&gt; SwiftUI.Picker&lt;SwiftUI.Text, Stromabrechnungen.Rechnungsstatus, SwiftUI.ForEach&lt;Swift.Array&lt;Stromabrechnungen.Rechnungsstatus&gt;, Stromabrechnungen.Rechnungsstatus, &lt;&lt;opaque return type of SwiftUI.View.tag&lt;&#x3c4;_0_0 where &#x3c4;_1_0: Swift.Hashable&gt;(_: &#x3c4;_1_0, includeOptional: Swift.Bool) -&gt; some&gt;&gt;.0&gt;&gt; in closure #1 () -&gt; SwiftUI.TupleView&lt;(SwiftUI.Section&lt;SwiftUI.Text, SwiftUI.TupleView&lt;(SwiftUI.DatePicker&lt;SwiftUI.Text&gt;, SwiftUI.DatePicker&lt;SwiftUI.Text&gt;, SwiftUI.DatePicker&lt;SwiftUI.Text&gt;)&gt;, SwiftUI.EmptyView&gt;, SwiftUI.Section&lt;SwiftUI.Text, SwiftUI.TupleView&lt;(SwiftUI.LabeledContent&lt;SwiftUI.Text, &lt;&lt;opaque return type of SwiftUI.View.keyboardType(__C.UIKeyboardType) -&gt; some&gt;&gt;.0&gt;, SwiftUI.LabeledContent&lt;SwiftUI.Text, &lt;&lt;opaque return type of SwiftUI.View.keyboardType(__C.UIKeyboardType) -&gt; some&gt;&gt;.0&gt;)&gt;, SwiftUI.Text&gt;, SwiftUI.Section&lt;SwiftUI.Text, SwiftUI.Picker&lt;SwiftUI.Text, Stromabrechnungen.Rechnungsstatus, SwiftUI.ForEach&lt;Swift.Array&lt;Stromabrechnungen.Rechnungsstatus&gt;, Stromabrechnungen.Rechnungsstatus, &lt;&lt;opaque return type of SwiftUI.View.tag&lt;&#x3c4;_0_0 where &#x3c4;_1_0: Swift.Hashable&gt;(_: &#x3c4;_1_0, includeOptional: Swift.Bool) -&gt; some&gt;&gt;.0&gt;&gt;, SwiftUI.EmptyView&gt;)&gt; in closure #1 () -&gt; &lt;&lt;opaque return type of SwiftUI.View.onAppear(perform: Swift.Optional&lt;() -&gt; ()&gt;) -&gt; some&gt;&gt;.0 in Stromabrechnungen.ParteienrechnungErstellenView.body.getter : some"
+                  moduleName = "Stromabrechnungen.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/thomassussli/Library/Mobile%20Documents/com~apple~CloudDocs/XCode/Stromabrechnungen/Stromabrechnungen/ParteienrechnungErstellenView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "83"
+                  endingLineNumber = "83">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
    </Breakpoints>
 </Bucket>

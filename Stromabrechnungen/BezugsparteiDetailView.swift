@@ -157,7 +157,7 @@ struct BezugsparteiDetailView: View {
             BezugsparteiBearbeitenView(gemeinschaft: gemeinschaft, partei: partei)
         }
         .sheet(isPresented: $zeigeNeueRechnung) {
-            ParteienrechnungErstellenView(partei: partei)
+            ParteienrechnungErstellenView(partei: partei, gemeinschaft: gemeinschaft)
         }
     }
 
