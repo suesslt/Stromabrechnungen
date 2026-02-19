@@ -96,27 +96,73 @@ struct QRBill {
     let additionalInfo: String?
 
     // MARK: - Factory aus SwiftData-Modellen
+
     /// Erstellt einen QRBill direkt aus einer Parteienrechnung.
     /// - Parameters:
-    ///   - parteienrechnung: Die gestellte Parteienrechnung (enthält abgerechneterBetrag & Bezugspartei)
-    ///   - creditor: Stammdaten-Adresse (aus @AppStorage "kreditorAdresse")
-    ///   - additionalInfo: Optionaler Zusatztext auf der Rechnung
+    ///   - rechnung: Die Parteienrechnung (enthält Betrag & Bezugspartei)
+    ///   - creditor: Stammdaten-Adresse (z.B. aus @AppStorage gespeichert)
+    ///   - additionalInfo: Optionaler Zusatztext auf der Rechnung (z.B. "Stromabrechnung Jan–Feb")
     static func fromParteienrechnung(
-        _ parteienrechnung: Parteienrechnung,
+        _ rechnung: Parteienrechnung,
         creditor: QRAddress,
         additionalInfo: String? = nil
     ) -> QRBill? {
         guard
-            let bezugspartei = parteienrechnung.bezugspartei,
+            let bezugspartei = rechnung.bezugspartei,
             let gemeinschaft = bezugspartei.stromgemeinschaft
         else { return nil }
+
+        let debtor = QRAddress(
+            name: bezugspartei.name,
+            street: bezugspartei.street,
+            houseNumber: bezugspartei.houseNumber,
+            postalCode: bezugspartei.postalCode,
+            city: bezugspartei.city,
+            countryCode: bezugspartei.countryCode
+        )
 
         return QRBill(
             iban: gemeinschaft.abrechnungskonto.replacingOccurrences(of: " ", with: ""),
             creditor: creditor,
-            amount: Double(truncating: parteienrechnung.abgerechneterBetrag as NSDecimalNumber),
+            amount: Double(truncating: rechnung.abgerechneterBetrag as NSDecimalNumber),
             currency: "CHF",
-            debtor: bezugspartei.qrAddress,
+            debtor: debtor,
+            referenceType: .none,
+            reference: nil,
+            additionalInfo: additionalInfo
+        )
+    }
+
+    /// Erstellt einen QRBill direkt aus einer Parteienabrechnung.
+    /// - Parameters:
+    ///   - parteienabrechnung: Die abgerechnete Parteienabrechnung (enthält Betrag & Bezugspartei)
+    ///   - creditor: Stammdaten-Adresse (z.B. aus @AppStorage gespeichert)
+    ///   - additionalInfo: Optionaler Zusatztext auf der Rechnung (z.B. "Rechnung Nr. 42")
+    static func fromParteienabrechnung(
+        _ parteienabrechnung: Parteienabrechnung,
+        creditor: QRAddress,
+        additionalInfo: String? = nil
+    ) -> QRBill? {
+        guard
+            let gemeinschaft = parteienabrechnung.stromabrechnung?.stromgemeinschaft,
+            let bezugspartei = parteienabrechnung.bezugspartei
+        else { return nil }
+
+        let debtor = QRAddress(
+            name: bezugspartei.name,
+            street: bezugspartei.street,
+            houseNumber: bezugspartei.houseNumber,
+            postalCode: bezugspartei.postalCode,
+            city: bezugspartei.city,
+            countryCode: bezugspartei.countryCode
+        )
+
+        return QRBill(
+            iban: gemeinschaft.abrechnungskonto.replacingOccurrences(of: " ", with: ""),
+            creditor: creditor,
+            amount: Double(truncating: parteienabrechnung.betrag as NSDecimalNumber),
+            currency: "CHF",
+            debtor: debtor,
             referenceType: .none,
             reference: nil,
             additionalInfo: additionalInfo
@@ -132,11 +178,14 @@ struct QRBill {
         lines.append("0200")     // Version (0200 entspricht V2.x)
         lines.append("1")        // Coding (UTF-8)
         
-        // 2. Creditor Info (IBAN & Adresse Typ S)
+        // 2. Creditor Info (IBAN & Adresse Typ S) → Zeilen 4–11
         lines.append(iban.replacingOccurrences(of: " ", with: ""))
         lines.append(contentsOf: formatAddress(creditor))
         
-        // 3. Amount & Currency
+        // 3. Ultimate Creditor → Zeilen 12–18 (im Standard reserviert, immer leer)
+        lines.append(contentsOf: Array(repeating: "", count: 7))
+        
+        // 4. Amount & Currency → Zeilen 19–20
         if let amt = amount {
             lines.append(String(format: "%.2f", amt))
         } else {
@@ -144,7 +193,7 @@ struct QRBill {
         }
         lines.append(currency)
         
-        // 4. Debtor Info
+        // 5. Debtor Info → Zeilen 21–27
         if let debtor = debtor {
             lines.append(contentsOf: formatAddress(debtor))
         } else {
@@ -152,15 +201,15 @@ struct QRBill {
             lines.append(contentsOf: Array(repeating: "", count: 7))
         }
         
-        // 5. Payment Reference
+        // 6. Payment Reference
         lines.append(referenceType.rawValue)
         lines.append(reference?.replacingOccurrences(of: " ", with: "") ?? "")
         
-        // 6. Additional Info
+        // 7. Additional Info
         lines.append(additionalInfo ?? "")
         lines.append("EPD") // Trailer
         
-        // 7. Alternative Verfahren (max 2, hier leer)
+        // 8. Alternative Verfahren (max 2, hier leer)
         lines.append("")
         lines.append("")
         
