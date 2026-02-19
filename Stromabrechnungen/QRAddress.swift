@@ -96,36 +96,27 @@ struct QRBill {
     let additionalInfo: String?
 
     // MARK: - Factory aus SwiftData-Modellen
-    /// Erstellt einen QRBill direkt aus einer Parteienabrechnung.
+    /// Erstellt einen QRBill direkt aus einer Parteienrechnung.
     /// - Parameters:
-    ///   - parteienabrechnung: Die abgerechnete Parteienabrechnung (enthält Betrag & Bezugspartei)
-    ///   - creditor: Stammdaten-Adresse (z.B. aus @AppStorage gespeichert)
-    ///   - additionalInfo: Optionaler Zusatztext auf der Rechnung (z.B. "Rechnung Nr. 42")
-    static func fromParteienabrechnung(
-        _ parteienabrechnung: Parteienabrechnung,
+    ///   - parteienrechnung: Die gestellte Parteienrechnung (enthält abgerechneterBetrag & Bezugspartei)
+    ///   - creditor: Stammdaten-Adresse (aus @AppStorage "kreditorAdresse")
+    ///   - additionalInfo: Optionaler Zusatztext auf der Rechnung
+    static func fromParteienrechnung(
+        _ parteienrechnung: Parteienrechnung,
         creditor: QRAddress,
         additionalInfo: String? = nil
     ) -> QRBill? {
         guard
-            let gemeinschaft = parteienabrechnung.stromabrechnung?.stromgemeinschaft,
-            let bezugspartei = parteienabrechnung.bezugspartei
+            let bezugspartei = parteienrechnung.bezugspartei,
+            let gemeinschaft = bezugspartei.stromgemeinschaft
         else { return nil }
-
-        let debtor = QRAddress(
-            name: bezugspartei.name,
-            street: bezugspartei.street,
-            houseNumber: bezugspartei.houseNumber,
-            postalCode: bezugspartei.postalCode,
-            city: bezugspartei.city,
-            countryCode: bezugspartei.countryCode
-        )
 
         return QRBill(
             iban: gemeinschaft.abrechnungskonto.replacingOccurrences(of: " ", with: ""),
             creditor: creditor,
-            amount: Double(truncating: parteienabrechnung.betrag as NSDecimalNumber),
+            amount: Double(truncating: parteienrechnung.abgerechneterBetrag as NSDecimalNumber),
             currency: "CHF",
-            debtor: debtor,
+            debtor: bezugspartei.qrAddress,
             referenceType: .none,
             reference: nil,
             additionalInfo: additionalInfo

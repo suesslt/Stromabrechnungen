@@ -158,7 +158,9 @@ struct BezugsparteiDetailView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(rechnungen) { rechnung in
-                        ParteienrechnungListItemView(rechnung: rechnung)
+                        NavigationLink(destination: ParteienrechnungView(rechnung: rechnung)) {
+                            ParteienrechnungListItemView(rechnung: rechnung)
+                        }
                     }
                     .onDelete { indexSet in
                         rechnungenLoeschen(rechnungen: rechnungen, at: indexSet)

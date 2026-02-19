@@ -86,26 +86,23 @@ struct StromabrechnungListItemView: View {
                     Divider()
                     VStack(spacing: 0) {
                         ForEach(Array(parteien.enumerated()), id: \.element.id) { idx, pa in
-                            NavigationLink(destination: ParteienrechnungView(parteienabrechnung: pa)) {
-                                HStack {
-                                    Text(pa.bezugspartei?.name ?? "–")
+                            HStack {
+                                Text(pa.bezugspartei?.name ?? "–")
+                                    .font(.subheadline)
+                                Spacer()
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    Text(
+                                        "\(Self.mengenFormatter.string(from: pa.bezugsmenge as NSDecimalNumber) ?? "") kWh"
+                                    )
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .monospacedDigit()
+                                    Text(Self.chfFormatter.string(from: pa.betrag as NSDecimalNumber) ?? "")
                                         .font(.subheadline)
-                                    Spacer()
-                                    VStack(alignment: .trailing, spacing: 2) {
-                                        Text(
-                                            "\(Self.mengenFormatter.string(from: pa.bezugsmenge as NSDecimalNumber) ?? "") kWh"
-                                        )
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
                                         .monospacedDigit()
-                                        Text(Self.chfFormatter.string(from: pa.betrag as NSDecimalNumber) ?? "")
-                                            .font(.subheadline)
-                                            .monospacedDigit()
-                                    }
                                 }
-                                .padding(.vertical, 8)
                             }
-                            .buttonStyle(.plain)
+                            .padding(.vertical, 8)
 
                             if idx < parteien.count - 1 {
                                 Divider()

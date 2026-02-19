@@ -8,25 +8,24 @@
 import SwiftUI
 
 struct ParteienrechnungView: View {
-    let parteienabrechnung: Parteienabrechnung
+    let rechnung: Parteienrechnung
 
     @AppStorage("kreditorAdresse") private var kreditor: QRAddress = .empty
 
     // MARK: - Berechnete Hilfsgrössen
 
     private var bill: QRBill? {
-        QRBill.fromParteienabrechnung(
-            parteienabrechnung,
+        QRBill.fromParteienrechnung(
+            rechnung,
             creditor: kreditor,
             additionalInfo: rechnungstitel
         )
     }
 
     private var rechnungstitel: String {
-        let zeitraum = parteienabrechnung.stromabrechnung.map {
-            "\($0.abrechnungszeitraumVon.formatted(date: .abbreviated, time: .omitted)) – \($0.abrechnungszeitraumBis.formatted(date: .abbreviated, time: .omitted))"
-        } ?? ""
-        return "Stromabrechnung \(zeitraum)"
+        let von = rechnung.rechnungszeitraumVon.formatted(date: .abbreviated, time: .omitted)
+        let bis = rechnung.rechnungszeitraumBis.formatted(date: .abbreviated, time: .omitted)
+        return "Stromabrechnung \(von) – \(bis)"
     }
 
     private static let chfFormatter: NumberFormatter = {
@@ -46,15 +45,13 @@ struct ParteienrechnungView: View {
 
                 // MARK: Kopf
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Stromabrechnung")
+                    Text("Stromrechnung")
                         .font(.largeTitle.bold())
-                    if let abrechnung = parteienabrechnung.stromabrechnung {
-                        Text(
-                            "\(abrechnung.abrechnungszeitraumVon.formatted(date: .abbreviated, time: .omitted)) – \(abrechnung.abrechnungszeitraumBis.formatted(date: .abbreviated, time: .omitted))"
-                        )
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    }
+                    Text(
+                        "\(rechnung.rechnungszeitraumVon.formatted(date: .abbreviated, time: .omitted)) – \(rechnung.rechnungszeitraumBis.formatted(date: .abbreviated, time: .omitted))"
+                    )
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 }
 
                 Divider()
@@ -76,7 +73,7 @@ struct ParteienrechnungView: View {
                     Spacer()
 
                     // Debtor
-                    if let partei = parteienabrechnung.bezugspartei {
+                    if let partei = rechnung.bezugspartei {
                         VStack(alignment: .trailing, spacing: 2) {
                             Text("An")
                                 .font(.caption.uppercaseSmallCaps())
@@ -95,20 +92,24 @@ struct ParteienrechnungView: View {
 
                 // MARK: Rechnungsdetails
                 VStack(spacing: 12) {
+                    LabeledContent("Rechnungsdatum") {
+                        Text(rechnung.rechnungsdatum, style: .date)
+                            .foregroundStyle(.secondary)
+                    }
                     LabeledContent("Bezugsmenge") {
-                        Text("\(parteienabrechnung.bezugsmenge.formatted()) kWh")
+                        Text("\(rechnung.abgerechneteBezugsmenge.formatted()) kWh")
                             .monospacedDigit()
                     }
                     LabeledContent("Rechnungsbetrag") {
                         Text(
                             Self.chfFormatter.string(
-                                from: parteienabrechnung.betrag as NSDecimalNumber
+                                from: rechnung.abgerechneterBetrag as NSDecimalNumber
                             ) ?? ""
                         )
                         .monospacedDigit()
                         .bold()
                     }
-                    if let gemeinschaft = parteienabrechnung.stromabrechnung?.stromgemeinschaft {
+                    if let gemeinschaft = rechnung.bezugspartei?.stromgemeinschaft {
                         LabeledContent("IBAN") {
                             Text(gemeinschaft.abrechnungskonto)
                                 .monospacedDigit()
@@ -120,12 +121,11 @@ struct ParteienrechnungView: View {
 
                 Divider()
 
-                // MARK: QR-Rechnung
+                // MARK: QR-Zahlteil
                 if let bill {
-                    VStack(alignment: .center, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 16) {
                         Text("Zahlteil")
                             .font(.headline)
-                            .frame(maxWidth: .infinity, alignment: .leading)
 
                         HStack(alignment: .top, spacing: 24) {
                             // QR-Code
@@ -135,7 +135,7 @@ struct ParteienrechnungView: View {
                                         .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
                                 )
 
-                            // Betrag & Währung
+                            // Währung & Betrag
                             VStack(alignment: .leading, spacing: 8) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Währung")
@@ -150,7 +150,7 @@ struct ParteienrechnungView: View {
                                         .foregroundStyle(.secondary)
                                     Text(
                                         Self.chfFormatter.string(
-                                            from: parteienabrechnung.betrag as NSDecimalNumber
+                                            from: rechnung.abgerechneterBetrag as NSDecimalNumber
                                         ) ?? ""
                                     )
                                     .font(.title3.bold())
@@ -162,7 +162,6 @@ struct ParteienrechnungView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 } else {
-                    // Fehlermeldung wenn Daten unvollständig
                     ContentUnavailableView(
                         "QR-Code nicht verfügbar",
                         systemImage: "qrcode.viewfinder",
@@ -172,7 +171,7 @@ struct ParteienrechnungView: View {
             }
             .padding()
         }
-        .navigationTitle(parteienabrechnung.bezugspartei?.name ?? "Rechnung")
+        .navigationTitle(rechnung.bezugspartei?.name ?? "Rechnung")
         .navigationBarTitleDisplayMode(.inline)
     }
 }
