@@ -75,6 +75,33 @@ struct BezugsparteiDetailView: View {
 
     var body: some View {
         List {
+            // MARK: Adresse
+            Section("Adresse") {
+                let hatAdresse = !partei.street.isEmpty || !partei.city.isEmpty
+                if hatAdresse {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(partei.name)
+                            .font(.headline)
+                        if !partei.street.isEmpty || !partei.houseNumber.isEmpty {
+                            Text("\(partei.street) \(partei.houseNumber)".trimmingCharacters(in: .whitespaces))
+                                .foregroundStyle(.secondary)
+                        }
+                        if !partei.postalCode.isEmpty || !partei.city.isEmpty {
+                            Text("\(partei.postalCode) \(partei.city)".trimmingCharacters(in: .whitespaces))
+                                .foregroundStyle(.secondary)
+                        }
+                        if !partei.countryCode.isEmpty {
+                            Text(partei.countryCode)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                } else {
+                    Text("Keine Adresse hinterlegt.")
+                        .foregroundStyle(.secondary)
+                }
+            }
+
             // MARK: Anteil
             Section("Anteil an der Gemeinschaft") {
                 LabeledContent("Anteil") {

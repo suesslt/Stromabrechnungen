@@ -14,11 +14,23 @@ struct BezugsparteiBearbeitenView: View {
     /// `nil` = Neu anlegen
     var partei: Bezugspartei?
 
+    // MARK: - Formularfelder
+
     @State private var name = ""
     @State private var anteilText = ""
+
+    // Adresse
+    @State private var street = ""
+    @State private var houseNumber = ""
+    @State private var postalCode = ""
+    @State private var city = ""
+    @State private var countryCode = "CH"
+
     @State private var validierungsfehler: String?
 
-    // Summe der anderen Parteien (ohne die aktuell bearbeitete)
+    // MARK: - Berechnete Hilfsgrössen
+
+    /// Summe der anderen Parteien (ohne die aktuell bearbeitete)
     private var summeAndere: Decimal {
         (gemeinschaft.bezugsparteien ?? [])
             .filter { $0.persistentModelID != partei?.persistentModelID }
@@ -35,12 +47,46 @@ struct BezugsparteiBearbeitenView: View {
         return summeAndere + a <= 100
     }
 
+    // MARK: - Body
+
     var body: some View {
         NavigationStack {
             Form {
+                // MARK: Name
                 Section("Partei") {
                     TextField("Name der Bezugspartei", text: $name)
+                        .textContentType(.organizationName)
                 }
+
+                // MARK: Adresse
+                Section("Adresse") {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        TextField("Strasse", text: $street)
+                            .textContentType(.streetAddressLine1)
+                            .frame(maxWidth: .infinity)
+                        TextField("Nr.", text: $houseNumber)
+                            .textContentType(.streetAddressLine2)
+                            .frame(width: 64)
+                            .multilineTextAlignment(.trailing)
+                    }
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        TextField("PLZ", text: $postalCode)
+                            .textContentType(.postalCode)
+                            .keyboardType(.numbersAndPunctuation)
+                            .frame(width: 80)
+                        TextField("Ort", text: $city)
+                            .textContentType(.addressCity)
+                            .frame(maxWidth: .infinity)
+                    }
+                    TextField("Ländercode (ISO 3166-1, z. B. CH)", text: $countryCode)
+                        .textInputAutocapitalization(.characters)
+                        .onChange(of: countryCode) { _, newValue in
+                            // Auf 2 Zeichen begrenzen und Grossbuchstaben erzwingen
+                            countryCode = String(newValue.uppercased().prefix(2))
+                        }
+                }
+
+                // MARK: Anteil
                 Section {
                     TextField("Anteil (%)", text: $anteilText)
                         .keyboardType(.decimalPad)
@@ -63,7 +109,7 @@ struct BezugsparteiBearbeitenView: View {
                     Text("Bereits vergeben (andere Parteien): \(summeAndere.formatted()) %. Verbleibend: \((100 - summeAndere).formatted()) %.")
                 }
             }
-            .navigationTitle(partei == nil ? "Neue Bezugspartei" : "Anteil bearbeiten")
+            .navigationTitle(partei == nil ? "Neue Bezugspartei" : "Bezugspartei bearbeiten")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Abbrechen") { dismiss() }
@@ -77,10 +123,17 @@ struct BezugsparteiBearbeitenView: View {
         }
     }
 
+    // MARK: - Hilfsmethoden
+
     private func vorbelegen() {
         guard let p = partei else { return }
         name = p.name
         anteilText = "\(p.anteil)"
+        street = p.street
+        houseNumber = p.houseNumber
+        postalCode = p.postalCode
+        city = p.city
+        countryCode = p.countryCode
     }
 
     private func speichern() {
@@ -94,10 +147,20 @@ struct BezugsparteiBearbeitenView: View {
         if let p = partei {
             p.name = name.trimmingCharacters(in: .whitespaces)
             p.anteil = a
+            p.street = street.trimmingCharacters(in: .whitespaces)
+            p.houseNumber = houseNumber.trimmingCharacters(in: .whitespaces)
+            p.postalCode = postalCode.trimmingCharacters(in: .whitespaces)
+            p.city = city.trimmingCharacters(in: .whitespaces)
+            p.countryCode = countryCode.trimmingCharacters(in: .whitespaces)
         } else {
             let neu = Bezugspartei(
                 name: name.trimmingCharacters(in: .whitespaces),
                 anteil: a,
+                street: street.trimmingCharacters(in: .whitespaces),
+                houseNumber: houseNumber.trimmingCharacters(in: .whitespaces),
+                postalCode: postalCode.trimmingCharacters(in: .whitespaces),
+                city: city.trimmingCharacters(in: .whitespaces),
+                countryCode: countryCode.trimmingCharacters(in: .whitespaces),
                 stromgemeinschaft: gemeinschaft
             )
             modelContext.insert(neu)
