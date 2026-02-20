@@ -102,9 +102,6 @@ struct StromgemeinschaftKachel: View {
                 Text(gemeinschaft.bezeichnung)
                     .font(.headline)
                     .foregroundStyle(.white)
-                Text(gemeinschaft.abrechnungskonto)
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.85))
             }
             .padding(10)
             .frame(maxWidth: .infinity, alignment: .leading)

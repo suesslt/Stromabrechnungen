@@ -98,6 +98,7 @@ struct StromrechnungBearbeitenView: View {
         let menge = Decimal(string: strombezugsmenge.replacingOccurrences(of: ",", with: ".")) ?? 0
 
         if let r = rechnung {
+            // Existierende Rechnung bearbeiten
             r.rechnungssteller = rechnungssteller.trimmingCharacters(in: .whitespaces)
             r.rechnungsdatum = rechnungsdatum
             r.abrechnungszeitraumVon = zeitraumVon
@@ -105,6 +106,7 @@ struct StromrechnungBearbeitenView: View {
             r.rechnungsbetrag = betrag
             r.strombezugsmenge = menge
         } else {
+            // Neue Rechnung anlegen
             let neu = Stromrechnung(
                 rechnungssteller: rechnungssteller.trimmingCharacters(in: .whitespaces),
                 abrechnungszeitraumVon: zeitraumVon,
@@ -116,6 +118,10 @@ struct StromrechnungBearbeitenView: View {
             )
             modelContext.insert(neu)
         }
+        
+        // Delta-Abrechnung erstellen (bei Neu anlegen UND Bearbeiten)
+        gemeinschaft.erstelleDeltaAbrechnung(modelContext: modelContext)
+        
         dismiss()
     }
 }

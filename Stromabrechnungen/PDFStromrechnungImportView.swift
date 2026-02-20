@@ -242,6 +242,10 @@ struct PDFStromrechnungImportView: View {
             stromgemeinschaft: gemeinschaft
         )
         modelContext.insert(neu)
+        
+        // Automatisch eine Delta-Stromabrechnung erstellen
+        gemeinschaft.erstelleDeltaAbrechnung(modelContext: modelContext)
+        
         dismiss()
     }
 }

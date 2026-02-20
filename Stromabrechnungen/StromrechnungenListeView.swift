@@ -14,6 +14,7 @@ struct StromrechnungenListeView: View {
 
     @State private var zeigeNeuAnlegen = false
     @State private var zeigePDFImport = false
+    @State private var zuBearbeitendeRechnung: Stromrechnung? = nil
 
     private var sortierteRechnungen: [Stromrechnung] {
         (gemeinschaft.stromrechnungen ?? []).sorted { $0.abrechnungszeitraumVon < $1.abrechnungszeitraumVon }
@@ -24,8 +25,34 @@ struct StromrechnungenListeView: View {
             List {
                 ForEach(sortierteRechnungen) { rechnung in
                     StromrechnungListItemView(rechnung: rechnung)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                rechnungLoeschen(rechnung)
+                            } label: {
+                                Label("Löschen", systemImage: "trash")
+                            }
+                            
+                            Button {
+                                zuBearbeitendeRechnung = rechnung
+                            } label: {
+                                Label("Bearbeiten", systemImage: "pencil")
+                            }
+                            .tint(.blue)
+                        }
+                        .contextMenu {
+                            Button {
+                                zuBearbeitendeRechnung = rechnung
+                            } label: {
+                                Label("Bearbeiten", systemImage: "pencil")
+                            }
+                            
+                            Button(role: .destructive) {
+                                rechnungLoeschen(rechnung)
+                            } label: {
+                                Label("Löschen", systemImage: "trash")
+                            }
+                        }
                 }
-                .onDelete(perform: rechnungLoeschen)
             }
             .overlay {
                 if sortierteRechnungen.isEmpty {
@@ -64,14 +91,18 @@ struct StromrechnungenListeView: View {
             .sheet(isPresented: $zeigePDFImport) {
                 PDFStromrechnungImportView(gemeinschaft: gemeinschaft)
             }
+            .sheet(item: $zuBearbeitendeRechnung) { rechnung in
+                StromrechnungBearbeitenView(gemeinschaft: gemeinschaft, rechnung: rechnung)
+            }
         }
     }
 
     // MARK: Aktionen
 
-    private func rechnungLoeschen(at offsets: IndexSet) {
-        for index in offsets {
-            modelContext.delete(sortierteRechnungen[index])
-        }
+    private func rechnungLoeschen(_ rechnung: Stromrechnung) {
+        modelContext.delete(rechnung)
+        
+        // Delta-Abrechnung nach dem Löschen erstellen
+        gemeinschaft.erstelleDeltaAbrechnung(modelContext: modelContext)
     }
 }
