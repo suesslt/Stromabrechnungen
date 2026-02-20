@@ -84,7 +84,7 @@ struct StromgemeinschaftDetailView: View {
                         HStack {
                             Text(partei.name)
                             Spacer()
-                            Text("\(partei.anteil.formatted()) %")
+                            Text(abgerechnetBetragFuerPartei(partei), format: .currency(code: "CHF"))
                                 .foregroundStyle(.secondary)
                                 .monospacedDigit()
                         }
@@ -94,13 +94,15 @@ struct StromgemeinschaftDetailView: View {
 
                 // Summen-Zeile
                 let summeAnteile = (gemeinschaft.bezugsparteien ?? []).reduce(Decimal(0)) { $0 + $1.anteil }
+                let summeAbgerechnet = (gemeinschaft.bezugsparteien ?? []).reduce(Decimal(0)) { $0 + abgerechnetBetragFuerPartei($1) }
                 HStack {
                     Text("Summe")
                         .bold()
                     Spacer()
-                    Text("\(summeAnteile.formatted()) %")
+                    Text(summeAbgerechnet, format: .currency(code: "CHF"))
                         .bold()
-                        .foregroundStyle(summeAnteile == 100 ? .green : .red)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
                 }
 
                 NavigationLink(destination: BezugsparteiBearbeitenView(gemeinschaft: gemeinschaft, partei: nil)) {
@@ -109,7 +111,7 @@ struct StromgemeinschaftDetailView: View {
             } header: {
                 Text("Bezugsparteien")
             } footer: {
-                Text("Die Summe der Anteile muss 100 % betragen.")
+                Text("Summe der noch nicht abgerechneten Beträge pro Bezugspartei.")
             }
         }
         .navigationTitle(gemeinschaft.bezeichnung)
@@ -158,6 +160,14 @@ struct StromgemeinschaftDetailView: View {
         for index in offsets {
             modelContext.delete(sortierte[index])
         }
+    }
+    
+    /// Berechnet den abgerechneten Betrag für eine Bezugspartei
+    /// (Summe Parteienabrechungen - Summe Parteienrechnungen)
+    private func abgerechnetBetragFuerPartei(_ partei: Bezugspartei) -> Decimal {
+        let summeAbrechnungen = (partei.parteienabrechungen ?? []).reduce(Decimal(0)) { $0 + $1.betrag }
+        let summeRechnungen = (partei.parteienrechnungen ?? []).reduce(Decimal(0)) { $0 + $1.abgerechneterBetrag }
+        return summeAbrechnungen - summeRechnungen
     }
 }
 

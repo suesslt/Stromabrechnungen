@@ -59,15 +59,24 @@ private struct SwissCrossOverlay: View {
     //   Trägerquadrat:      7 ×  7 mm
     //   → Verhältnis:       7 / 46 ≈ 0.1522
     private let relativeSize: CGFloat = 7.0 / 46.0
+    // Weisser Rand: ca. 0.6 mm bei 7 mm Trägerquadrat → 0.6/7 ≈ 0.0857
+    private let whiteBorderRatio: CGFloat = 0.6 / 7.0
 
     var body: some View {
         GeometryReader { geo in
             let side = min(geo.size.width, geo.size.height) * relativeSize
+            let borderWidth = side * whiteBorderRatio
             ZStack {
-                // Rotes Trägerquadrat (7 × 7 mm) in Schweizer Rot (Pantone 485 C)
-                Rectangle()
+                // Weisses Hintergrundquadrat (mit abgerundeten Ecken)
+                RoundedRectangle(cornerRadius: side * 0.1)
+                    .fill(Color.white)
+                    .frame(width: side + borderWidth * 2, height: side + borderWidth * 2)
+                
+                // Rotes Trägerquadrat (7 × 7 mm) in Schweizer Rot (Pantone 485 C) mit abgerundeten Ecken
+                RoundedRectangle(cornerRadius: side * 0.1)
                     .fill(Color(red: 1.0, green: 0.0, blue: 0.063))
                     .frame(width: side, height: side)
+                
                 // Weisses Schweizerkreuz
                 SwissCrossShape()
                     .fill(Color.white)

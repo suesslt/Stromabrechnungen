@@ -102,6 +102,9 @@ struct StromrechnungenListeView: View {
     private func rechnungLoeschen(_ rechnung: Stromrechnung) {
         modelContext.delete(rechnung)
         
+        // ModelContext-Änderungen verarbeiten, bevor Delta-Abrechnung erstellt wird
+        try? modelContext.save()
+        
         // Delta-Abrechnung nach dem Löschen erstellen
         gemeinschaft.erstelleDeltaAbrechnung(modelContext: modelContext)
     }
