@@ -1,12 +1,26 @@
 import Foundation
 import SwiftData
 import SwiftUI
+import SwissInvoice
 
 @Model
 final class Stromgemeinschaft {
     var bezeichnung: String = ""
     var abrechnungskonto: String = ""
     var bild: Data?
+
+    // MARK: - Kreditor-Adresse
+    var kreditorName: String = ""
+    var kreditorAdresszusatz: String = ""
+    var kreditorStrasse: String = ""
+    var kreditorHausnummer: String = ""
+    var kreditorPLZ: String = ""
+    var kreditorOrt: String = ""
+    var kreditorLand: String = "CH"
+
+    // MARK: - Rechnungstexte (mit Platzhaltern)
+    var rechnungLeadingText: String = ""
+    var rechnungTrailingText: String = ""
 
     @Relationship(deleteRule: .cascade, inverse: \Stromrechnung.stromgemeinschaft)
     var stromrechnungen: [Stromrechnung]?
@@ -17,10 +31,45 @@ final class Stromgemeinschaft {
     @Relationship(deleteRule: .cascade, inverse: \Bezugspartei.stromgemeinschaft)
     var bezugsparteien: [Bezugspartei]?
 
-    init(bezeichnung: String, abrechnungskonto: String, bild: Data? = nil) {
+    /// Kreditor-Adresse als SwissInvoice.Address
+    var kreditorAdresse: Address {
+        Address(
+            name: kreditorName,
+            addressAddition: kreditorAdresszusatz,
+            street: kreditorStrasse,
+            houseNumber: kreditorHausnummer,
+            postalCode: kreditorPLZ,
+            city: kreditorOrt,
+            countryCode: kreditorLand
+        )
+    }
+
+    init(
+        bezeichnung: String,
+        abrechnungskonto: String,
+        bild: Data? = nil,
+        kreditorName: String = "",
+        kreditorAdresszusatz: String = "",
+        kreditorStrasse: String = "",
+        kreditorHausnummer: String = "",
+        kreditorPLZ: String = "",
+        kreditorOrt: String = "",
+        kreditorLand: String = "CH",
+        rechnungLeadingText: String = "",
+        rechnungTrailingText: String = ""
+    ) {
         self.bezeichnung = bezeichnung
         self.abrechnungskonto = abrechnungskonto
         self.bild = bild
+        self.kreditorName = kreditorName
+        self.kreditorAdresszusatz = kreditorAdresszusatz
+        self.kreditorStrasse = kreditorStrasse
+        self.kreditorHausnummer = kreditorHausnummer
+        self.kreditorPLZ = kreditorPLZ
+        self.kreditorOrt = kreditorOrt
+        self.kreditorLand = kreditorLand
+        self.rechnungLeadingText = rechnungLeadingText
+        self.rechnungTrailingText = rechnungTrailingText
     }
     
     /// Erstellt eine neue Stromabrechnung basierend auf dem Delta zwischen 

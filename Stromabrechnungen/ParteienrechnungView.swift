@@ -6,21 +6,22 @@
 //
 
 import SwiftUI
+import SwissInvoice
+import QuickLook
 
 struct ParteienrechnungView: View {
     let rechnung: Parteienrechnung
 
-    @AppStorage("kreditorAdresse") private var kreditor: QRAddress = .empty
-    @State private var pdfItem: PDFShareItem? = nil
+    @State private var pdfURL: IdentifiableURL?
 
     // MARK: - Berechnete Hilfsgrössen
 
-    private var bill: QRBill? {
-        QRBill.fromParteienrechnung(
-            rechnung,
-            creditor: kreditor,
-            additionalInfo: rechnungstitel
-        )
+    private var invoice: SwissInvoice? {
+        rechnung.swissInvoice()
+    }
+
+    private var kreditor: Address? {
+        rechnung.bezugspartei?.stromgemeinschaft?.kreditorAdresse
     }
 
     private var rechnungstitel: String {
@@ -29,29 +30,17 @@ struct ParteienrechnungView: View {
         return "Stromabrechnung \(von) – \(bis)"
     }
 
-    private static let chfFormatter: NumberFormatter = {
-        let f = NumberFormatter()
-        f.numberStyle = .currency
-        f.currencyCode = "CHF"
-        f.minimumFractionDigits = 2
-        f.maximumFractionDigits = 2
-        return f
-    }()
+    // MARK: - PDF erzeugen & anzeigen
 
-    // MARK: - PDF erzeugen & teilen
-
-    private func generateAndSharePDF() {
-        guard let bill else { return }
-        let renderer = RechnungPDFRenderer(
-            rechnung: rechnung,
-            kreditor: kreditor,
-            bill: bill
-        )
-        let data = renderer.render()
+    private func generateAndShowPDF() {
+        guard let invoice else { return }
+        let data = invoice.pdfData()
         let filename = rechnungstitel
             .replacingOccurrences(of: " ", with: "_")
             .replacingOccurrences(of: "–", with: "-")
-        pdfItem = PDFShareItem(data: data, filename: "\(filename).pdf")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(filename).pdf")
+        try? data.write(to: url)
+        pdfURL = IdentifiableURL(url: url)
     }
 
     // MARK: - Body
@@ -76,16 +65,21 @@ struct ParteienrechnungView: View {
                 // MARK: Adressen (Kreditor / Debtor)
                 HStack(alignment: .top, spacing: 32) {
                     // Kreditor
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Von")
-                            .font(.caption.uppercaseSmallCaps())
-                            .foregroundStyle(.secondary)
-                        Text(kreditor.name).bold()
-                        Text("\(kreditor.street) \(kreditor.houseNumber)")
-                        Text("\(kreditor.postalCode) \(kreditor.city)")
-                        Text(kreditor.countryCode)
+                    if let kreditor {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Von")
+                                .font(.caption.uppercaseSmallCaps())
+                                .foregroundStyle(.secondary)
+                            Text(kreditor.name).bold()
+                            if !kreditor.addressAddition.isEmpty {
+                                Text(kreditor.addressAddition)
+                            }
+                            Text("\(kreditor.street) \(kreditor.houseNumber)")
+                            Text("\(kreditor.postalCode) \(kreditor.city)")
+                            Text(kreditor.countryCode)
+                        }
+                        .font(.subheadline)
                     }
-                    .font(.subheadline)
 
                     Spacer()
 
@@ -118,13 +112,11 @@ struct ParteienrechnungView: View {
                             .monospacedDigit()
                     }
                     LabeledContent("Rechnungsbetrag") {
-                        Text(
-                            Self.chfFormatter.string(
-                                from: rechnung.abgerechneterBetrag as NSDecimalNumber
-                            ) ?? ""
-                        )
-                        .monospacedDigit()
-                        .bold()
+                        if let invoice {
+                            Text(invoice.amount.formatted)
+                                .monospacedDigit()
+                                .bold()
+                        }
                     }
                     if let gemeinschaft = rechnung.bezugspartei?.stromgemeinschaft {
                         LabeledContent("IBAN") {
@@ -136,53 +128,11 @@ struct ParteienrechnungView: View {
                 }
                 .font(.subheadline)
 
-                Divider()
-
-                // MARK: QR-Zahlteil
-                if let bill {
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Zahlteil")
-                            .font(.headline)
-
-                        HStack(alignment: .top, spacing: 24) {
-                            // QR-Code
-                            QRCodeView(payload: bill.generatePayload(), size: 160)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                                )
-
-                            // Währung & Betrag
-                            VStack(alignment: .leading, spacing: 8) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Währung")
-                                        .font(.caption.uppercaseSmallCaps())
-                                        .foregroundStyle(.secondary)
-                                    Text(bill.currency)
-                                        .font(.subheadline.bold())
-                                }
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Betrag")
-                                        .font(.caption.uppercaseSmallCaps())
-                                        .foregroundStyle(.secondary)
-                                    Text(
-                                        Self.chfFormatter.string(
-                                            from: rechnung.abgerechneterBetrag as NSDecimalNumber
-                                        ) ?? ""
-                                    )
-                                    .font(.title3.bold())
-                                    .monospacedDigit()
-                                }
-                                Spacer()
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                } else {
+                if invoice == nil {
                     ContentUnavailableView(
-                        "QR-Code nicht verfügbar",
-                        systemImage: "qrcode.viewfinder",
-                        description: Text("Bitte prüfe die Kreditor-Adresse in den Einstellungen sowie die IBAN der Stromgemeinschaft.")
+                        "Rechnung nicht verfügbar",
+                        systemImage: "doc.text",
+                        description: Text("Bitte prüfe die Kreditor-Adresse in den Stammdaten der Stromgemeinschaft sowie die IBAN.")
                     )
                 }
             }
@@ -193,42 +143,47 @@ struct ParteienrechnungView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    generateAndSharePDF()
+                    generateAndShowPDF()
                 } label: {
-                    Label("PDF herunterladen", systemImage: "arrow.down.document")
+                    Label("PDF anzeigen", systemImage: "doc.richtext")
                 }
-                .disabled(bill == nil)
+                .disabled(invoice == nil)
             }
         }
-        .sheet(item: $pdfItem) { item in
-            ShareSheet(activityItems: [item.url])
-                .ignoresSafeArea()
+        .fullScreenCover(item: $pdfURL) { item in
+            PDFPreviewView(url: item.url)
         }
     }
 }
-// MARK: - Hilftypen für PDF-Sharing
 
-/// Wrapper, der die PDF-Daten in eine temporäre Datei schreibt,
-/// damit der System-ShareSheet eine echte URL erhält.
-private struct PDFShareItem: Identifiable {
+// MARK: - Identifiable-Wrapper für URL
+
+private struct IdentifiableURL: Identifiable {
     let id = UUID()
-    let data: Data
-    let filename: String
-
-    var url: URL {
-        let tmp = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
-        try? data.write(to: tmp)
-        return tmp
-    }
+    let url: URL
 }
 
-private struct ShareSheet: UIViewControllerRepresentable {
-    let activityItems: [Any]
+// MARK: - QuickLook PDF-Vorschau
 
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+private struct PDFPreviewView: UIViewControllerRepresentable {
+    let url: URL
+
+    func makeUIViewController(context: Context) -> UINavigationController {
+        let controller = QLPreviewController()
+        controller.dataSource = context.coordinator
+        return UINavigationController(rootViewController: controller)
     }
 
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
+    func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {}
 
+    func makeCoordinator() -> Coordinator { Coordinator(url: url) }
+
+    class Coordinator: NSObject, QLPreviewControllerDataSource {
+        let url: URL
+        init(url: URL) { self.url = url }
+        func numberOfPreviewItems(in controller: QLPreviewController) -> Int { 1 }
+        func previewController(_ controller: QLPreviewController, previewItemAt index: Int) -> QLPreviewItem {
+            url as QLPreviewItem
+        }
+    }
+}

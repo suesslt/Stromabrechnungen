@@ -23,6 +23,7 @@ enum ClaudeServiceFehler: LocalizedError {
     case ungueltigeAntwort
     case httpFehler(Int, String)
     case jsonParseFehler(String)
+    case netzwerkFehler(String)
 
     var errorDescription: String? {
         switch self {
@@ -30,10 +31,34 @@ enum ClaudeServiceFehler: LocalizedError {
             return "Kein Claude API-Key hinterlegt. Bitte in den Einstellungen erfassen."
         case .ungueltigeAntwort:
             return "Die Antwort von Claude konnte nicht verarbeitet werden."
-        case .httpFehler(let code, let body):
-            return "Claude API Fehler \(code): \(body)"
+        case .httpFehler(let code, _):
+            return Self.benutzerfreundlicheMeldung(fuerStatusCode: code)
         case .jsonParseFehler(let detail):
-            return "JSON-Fehler: \(detail)"
+            return "Die KI-Antwort konnte nicht verarbeitet werden: \(detail)"
+        case .netzwerkFehler(let detail):
+            return "Netzwerkfehler: \(detail)"
+        }
+    }
+
+    /// Liefert eine verständliche Fehlermeldung je nach HTTP-Statuscode.
+    private static func benutzerfreundlicheMeldung(fuerStatusCode code: Int) -> String {
+        switch code {
+        case 401:
+            return "Ungültiger API-Key. Bitte in den Einstellungen prüfen."
+        case 403:
+            return "Zugriff verweigert. Bitte API-Key und Berechtigungen prüfen."
+        case 429:
+            return "Zu viele Anfragen. Bitte warte einen Moment und versuche es erneut."
+        case 500:
+            return "Interner Serverfehler bei Claude. Bitte versuche es in wenigen Minuten erneut."
+        case 502:
+            return "Claude API ist vorübergehend nicht erreichbar (502 Bad Gateway). Bitte versuche es in wenigen Minuten erneut."
+        case 503:
+            return "Claude API ist vorübergehend überlastet (503). Bitte versuche es in wenigen Minuten erneut."
+        case 529:
+            return "Claude API ist überlastet (529). Bitte versuche es später erneut."
+        default:
+            return "Claude API Fehler (\(code)). Bitte versuche es später erneut."
         }
     }
 }
@@ -107,9 +132,23 @@ actor ClaudeService {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(key, forHTTPHeaderField: "x-api-key")
         request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+        request.timeoutInterval = 120 // 2 Minuten Timeout für grosse PDFs
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch let error as URLError {
+            switch error.code {
+            case .timedOut:
+                throw ClaudeServiceFehler.netzwerkFehler("Zeitüberschreitung – bitte versuche es erneut.")
+            case .notConnectedToInternet, .networkConnectionLost:
+                throw ClaudeServiceFehler.netzwerkFehler("Keine Internetverbindung.")
+            default:
+                throw ClaudeServiceFehler.netzwerkFehler(error.localizedDescription)
+            }
+        }
 
         guard let http = response as? HTTPURLResponse else {
             throw ClaudeServiceFehler.ungueltigeAntwort

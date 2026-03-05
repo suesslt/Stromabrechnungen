@@ -1,12 +1,13 @@
 import Foundation
 import SwiftData
+import SwissInvoice
 
 @Model
 final class Bezugspartei {
     var name: String = ""
     var anteil: Decimal = 0 // Anteil in Prozent (0–100). Die Summe aller Anteile einer Stromgemeinschaft muss 100 ergeben.
 
-    // MARK: - Adressfelder (entsprechen QRAddress)
+    // MARK: - Adressfelder
     var street: String = ""
     var houseNumber: String = ""
     var postalCode: String = ""
@@ -41,10 +42,11 @@ final class Bezugspartei {
         self.stromgemeinschaft = stromgemeinschaft
     }
 
-    // MARK: - QRAddress-Konvertierung
-    var qrAddress: QRAddress {
-        QRAddress(
+    // MARK: - Address-Konvertierung
+    var address: Address {
+        Address(
             name: name,
+            addressAddition: "",
             street: street,
             houseNumber: houseNumber,
             postalCode: postalCode,

@@ -1,0 +1,15 @@
+{
+  "originHash" : "7a48c3986a6b86ba692c190c5caa341f5dcfffaf327cc296b0ab4ab7892a7a4a",
+  "pins" : [
+    {
+      "identity" : "swissinvoice",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/suesslt/SwissInvoice.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "3cfe2176a67b7d4865ad20cc41f94f39480f44b2"
+      }
+    }
+  ],
+  "version" : 3
+}

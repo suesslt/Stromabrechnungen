@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B5228FE02F5975E000A8D2A5 /* SwissInvoice in Frameworks */ = {isa = PBXBuildFile; productRef = B5AA00022FA900010096B1DB /* SwissInvoice */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		B57D4DD82F4551270096B1DB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5228FE02F5975E000A8D2A5 /* SwissInvoice in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +130,7 @@
 			);
 			name = Stromabrechnungen;
 			packageProductDependencies = (
+				B5AA00022FA900010096B1DB /* SwissInvoice */,
 			);
 			productName = Stromabrechnungen;
 			productReference = B57D4DC62F4551260096B1DB /* Stromabrechnungen.app */;
@@ -208,6 +214,9 @@
 			);
 			mainGroup = B57D4DBD2F4551260096B1DB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B5AA00012FA900010096B1DB /* XCRemoteSwiftPackageReference "SwissInvoice" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B57D4DC72F4551260096B1DB /* Products */;
 			projectDirPath = "";
@@ -636,6 +645,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B5AA00012FA900010096B1DB /* XCRemoteSwiftPackageReference "SwissInvoice" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/suesslt/SwissInvoice.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B5AA00022FA900010096B1DB /* SwissInvoice */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B5AA00012FA900010096B1DB /* XCRemoteSwiftPackageReference "SwissInvoice" */;
+			productName = SwissInvoice;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B57D4DBE2F4551260096B1DB /* Project object */;
 }
