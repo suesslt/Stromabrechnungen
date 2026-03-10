@@ -219,7 +219,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				B5AA00012FA900010096B1DB /* XCRemoteSwiftPackageReference "SwissInvoice" */,
-				B5CC00022FB0000100000002 /* XCLocalSwiftPackageReference "score" */,
+				B5CC00022FB0000100000002 /* XCRemoteSwiftPackageReference "score" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B57D4DC72F4551260096B1DB /* Products */;
@@ -659,14 +659,15 @@
 				kind = branch;
 			};
 		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		B5CC00022FB0000100000002 /* XCLocalSwiftPackageReference "score" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../score;
+		B5CC00022FB0000100000002 /* XCRemoteSwiftPackageReference "score" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/suesslt/score.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
 		};
-/* End XCLocalSwiftPackageReference section */
+/* End XCRemoteSwiftPackageReference section */
 
 
 /* Begin XCSwiftPackageProductDependency section */

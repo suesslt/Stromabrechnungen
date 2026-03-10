@@ -1,6 +1,15 @@
 {
-  "originHash" : "7a48c3986a6b86ba692c190c5caa341f5dcfffaf327cc296b0ab4ab7892a7a4a",
+  "originHash" : "da24341b5c681b27159d4597a716c52af47cc2ed598ef1360e1e8b785cb6fca4",
   "pins" : [
+    {
+      "identity" : "score",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/suesslt/score.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "16be716ec3429222d96e6212d383f776822b7cea"
+      }
+    },
     {
       "identity" : "swissinvoice",
       "kind" : "remoteSourceControl",
