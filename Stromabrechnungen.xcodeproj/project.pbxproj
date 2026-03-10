@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B5228FE02F5975E000A8D2A5 /* SwissInvoice in Frameworks */ = {isa = PBXBuildFile; productRef = B5AA00022FA900010096B1DB /* SwissInvoice */; };
+		B5CC00012FB0000100000001 /* Score in Frameworks */ = {isa = PBXBuildFile; productRef = B5CC00032FB0000100000003 /* Score */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +71,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B5228FE02F5975E000A8D2A5 /* SwissInvoice in Frameworks */,
+				B5CC00012FB0000100000001 /* Score in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -131,6 +133,7 @@
 			name = Stromabrechnungen;
 			packageProductDependencies = (
 				B5AA00022FA900010096B1DB /* SwissInvoice */,
+				B5CC00032FB0000100000003 /* Score */,
 			);
 			productName = Stromabrechnungen;
 			productReference = B57D4DC62F4551260096B1DB /* Stromabrechnungen.app */;
@@ -216,6 +219,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				B5AA00012FA900010096B1DB /* XCRemoteSwiftPackageReference "SwissInvoice" */,
+				B5CC00022FB0000100000002 /* XCLocalSwiftPackageReference "score" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B57D4DC72F4551260096B1DB /* Products */;
@@ -657,11 +661,23 @@
 		};
 /* End XCRemoteSwiftPackageReference section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		B5CC00022FB0000100000002 /* XCLocalSwiftPackageReference "score" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../score;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+
 /* Begin XCSwiftPackageProductDependency section */
 		B5AA00022FA900010096B1DB /* SwissInvoice */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B5AA00012FA900010096B1DB /* XCRemoteSwiftPackageReference "SwissInvoice" */;
 			productName = SwissInvoice;
+		};
+		B5CC00032FB0000100000003 /* Score */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Score;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

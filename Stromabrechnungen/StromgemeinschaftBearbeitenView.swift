@@ -6,6 +6,7 @@
 import SwiftUI
 import PhotosUI
 import SwiftData
+import Score
 
 struct StromgemeinschaftBearbeitenView: View {
     @Environment(\.dismiss) private var dismiss
