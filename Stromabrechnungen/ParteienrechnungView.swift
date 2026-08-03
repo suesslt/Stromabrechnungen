@@ -7,12 +7,15 @@
 
 import SwiftUI
 import SwissInvoice
+import Score
 import QuickLook
 
 struct ParteienrechnungView: View {
     let rechnung: Parteienrechnung
 
     @State private var pdfURL: IdentifiableURL?
+    @State private var mailKontext: MailKontext?
+    @State private var zeigeMailNichtVerfuegbarAlert = false
 
     // MARK: - Berechnete Hilfsgrössen
 
@@ -32,15 +35,49 @@ struct ParteienrechnungView: View {
 
     // MARK: - PDF erzeugen & anzeigen
 
+    private var pdfDateiname: String {
+        rechnungstitel
+            .replacingOccurrences(of: " ", with: "_")
+            .replacingOccurrences(of: "–", with: "-")
+    }
+
     private func generateAndShowPDF() {
         guard let invoice else { return }
         let data = invoice.pdfData()
-        let filename = rechnungstitel
-            .replacingOccurrences(of: " ", with: "_")
-            .replacingOccurrences(of: "–", with: "-")
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(filename).pdf")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(pdfDateiname).pdf")
         try? data.write(to: url)
         pdfURL = IdentifiableURL(url: url)
+    }
+
+    // MARK: - Mail-Versand
+
+    private var empfaengerEMail: String {
+        rechnung.bezugspartei?.email.trimmingCharacters(in: .whitespaces) ?? ""
+    }
+
+    private func mailVorbereiten() {
+        guard let invoice else { return }
+        guard MailComposeView.canSendMail else {
+            zeigeMailNichtVerfuegbarAlert = true
+            return
+        }
+        let pdfData = invoice.pdfData()
+        let body = """
+        Guten Tag\(rechnung.bezugspartei.map { " \($0.name)" } ?? "")
+
+        Anbei die Stromabrechnung für den Zeitraum \
+        \(rechnung.rechnungszeitraumVon.formatted(date: .abbreviated, time: .omitted)) – \
+        \(rechnung.rechnungszeitraumBis.formatted(date: .abbreviated, time: .omitted)).
+
+        Freundliche Grüsse
+        """
+        mailKontext = MailKontext(
+            empfaenger: empfaengerEMail.isEmpty ? [] : [empfaengerEMail],
+            betreff: rechnungstitel,
+            body: body,
+            pdfData: pdfData,
+            dateiname: "\(pdfDateiname).pdf"
+        )
     }
 
     // MARK: - Body
@@ -70,9 +107,12 @@ struct ParteienrechnungView: View {
                             Text("Von")
                                 .font(.caption.uppercaseSmallCaps())
                                 .foregroundStyle(.secondary)
-                            Text(kreditor.name).bold()
-                            if !kreditor.addressAddition.isEmpty {
-                                Text(kreditor.addressAddition)
+                            Text(kreditor.displayName).bold()
+                            if !kreditor.addressAddition1.isEmpty {
+                                Text(kreditor.addressAddition1)
+                            }
+                            if !kreditor.addressAddition2.isEmpty {
+                                Text(kreditor.addressAddition2)
                             }
                             Text("\(kreditor.street) \(kreditor.houseNumber)")
                             Text("\(kreditor.postalCode) \(kreditor.city)")
@@ -125,6 +165,18 @@ struct ParteienrechnungView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+                    LabeledContent("Status") {
+                        Picker("Status", selection: Binding(
+                            get: { rechnung.rechnungsstatus },
+                            set: { rechnung.rechnungsstatus = $0 }
+                        )) {
+                            ForEach(Rechnungsstatus.allCases, id: \.self) { status in
+                                Text(status.rawValue).tag(status)
+                            }
+                        }
+                        .labelsHidden()
+                        .pickerStyle(.menu)
+                    }
                 }
                 .font(.subheadline)
 
@@ -141,7 +193,14 @@ struct ParteienrechnungView: View {
         .navigationTitle(rechnung.bezugspartei?.name ?? "Rechnung")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button {
+                    mailVorbereiten()
+                } label: {
+                    Label("Per E-Mail senden", systemImage: "envelope")
+                }
+                .disabled(invoice == nil)
+
                 Button {
                     generateAndShowPDF()
                 } label: {
@@ -153,7 +212,35 @@ struct ParteienrechnungView: View {
         .fullScreenCover(item: $pdfURL) { item in
             PDFPreviewView(url: item.url)
         }
+        .sheet(item: $mailKontext) { ctx in
+            MailComposeView(
+                recipients: ctx.empfaenger,
+                subject: ctx.betreff,
+                body: ctx.body,
+                attachmentData: ctx.pdfData,
+                attachmentFilename: ctx.dateiname
+            ) {
+                mailKontext = nil
+            }
+            .ignoresSafeArea()
+        }
+        .alert("E-Mail nicht verfügbar", isPresented: $zeigeMailNichtVerfuegbarAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Auf diesem Gerät ist kein Mail-Account konfiguriert. Bitte richte in der Mail-App ein Konto ein.")
+        }
     }
+}
+
+// MARK: - Mail-Kontext (Sheet-Item)
+
+private struct MailKontext: Identifiable {
+    let id = UUID()
+    let empfaenger: [String]
+    let betreff: String
+    let body: String
+    let pdfData: Data
+    let dateiname: String
 }
 
 // MARK: - Identifiable-Wrapper für URL

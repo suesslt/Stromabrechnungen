@@ -669,7 +669,6 @@
 		};
 /* End XCRemoteSwiftPackageReference section */
 
-
 /* Begin XCSwiftPackageProductDependency section */
 		B5AA00022FA900010096B1DB /* SwissInvoice */ = {
 			isa = XCSwiftPackageProductDependency;

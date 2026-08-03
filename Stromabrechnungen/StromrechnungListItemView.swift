@@ -46,19 +46,27 @@ struct StromrechnungListItemView: View {
             }
             .padding(.bottom, 6)
 
-            HStack(spacing: 16) {
-                Text(
-                    "\(Self.mengenFormatter.string(from: rechnung.strombezugsmenge as NSDecimalNumber) ?? "") kWh"
-                )
-                .monospacedDigit()
-                .foregroundStyle(.primary)
-
-                Text(
-                    Self.chfFormatter.string(from: rechnung.rechnungsbetrag as NSDecimalNumber) ?? ""
-                )
-                .monospacedDigit()
-                .foregroundStyle(.primary)
+            VStack(spacing: 2) {
+                LabeledContent("Lieferung") {
+                    Text("\(Self.mengenFormatter.string(from: rechnung.strombezugsmenge as NSDecimalNumber) ?? "") kWh")
+                        .monospacedDigit()
+                }
+                LabeledContent("Rechnungsbetrag") {
+                    Text(Self.chfFormatter.string(from: rechnung.rechnungsbetrag as NSDecimalNumber) ?? "")
+                        .monospacedDigit()
+                }
+                if rechnung.gutschrift > 0 {
+                    LabeledContent("Gutschrift") {
+                        Text(Self.chfFormatter.string(from: rechnung.gutschrift as NSDecimalNumber) ?? "")
+                            .monospacedDigit()
+                    }
+                    LabeledContent("Verrechenbar") {
+                        Text(Self.chfFormatter.string(from: rechnung.verrechenbarerBetrag as NSDecimalNumber) ?? "")
+                            .monospacedDigit()
+                    }
+                }
             }
+            .font(.subheadline)
         }
         .padding(.vertical, 4)
     }

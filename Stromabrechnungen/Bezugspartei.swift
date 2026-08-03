@@ -13,6 +13,7 @@ final class Bezugspartei {
     var postalCode: String = ""
     var city: String = ""
     var countryCode: String = "CH" // ISO 3166-1 (z.B. "CH")
+    var email: String = ""
 
     var stromgemeinschaft: Stromgemeinschaft?
 
@@ -30,6 +31,7 @@ final class Bezugspartei {
         postalCode: String = "",
         city: String = "",
         countryCode: String = "CH",
+        email: String = "",
         stromgemeinschaft: Stromgemeinschaft? = nil
     ) {
         self.name = name
@@ -39,14 +41,14 @@ final class Bezugspartei {
         self.postalCode = postalCode
         self.city = city
         self.countryCode = countryCode
+        self.email = email
         self.stromgemeinschaft = stromgemeinschaft
     }
 
     // MARK: - Address-Konvertierung
     var address: Address {
         Address(
-            name: name,
-            addressAddition: "",
+            companyName: name,
             street: street,
             houseNumber: houseNumber,
             postalCode: postalCode,

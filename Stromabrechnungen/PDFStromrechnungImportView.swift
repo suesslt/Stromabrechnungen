@@ -29,6 +29,7 @@ struct PDFStromrechnungImportView: View {
     @State private var zeitraumVon = Date.now
     @State private var zeitraumBis = Date.now
     @State private var rechnungsbetrag = ""
+    @State private var gutschrift = ""
     @State private var strombezugsmenge = ""
 
     @State private var felderSichtbar = false
@@ -107,10 +108,31 @@ struct PDFStromrechnungImportView: View {
                     }
 
                     Section("Beträge") {
-                        TextField("Rechnungsbetrag (CHF)", text: $rechnungsbetrag)
-                            .keyboardType(.decimalPad)
-                        TextField("Strombezugsmenge (kWh)", text: $strombezugsmenge)
-                            .keyboardType(.decimalPad)
+                        LabeledContent("Rechnungsbetrag") {
+                            TextField("CHF", text: $rechnungsbetrag)
+                                .keyboardType(.decimalPad)
+                                .multilineTextAlignment(.trailing)
+                                .monospacedDigit()
+                        }
+                        LabeledContent("Gutschrift") {
+                            TextField("CHF", text: $gutschrift)
+                                .keyboardType(.decimalPad)
+                                .multilineTextAlignment(.trailing)
+                                .monospacedDigit()
+                        }
+                        if let verrechenbar = verrechenbarerBetrag {
+                            LabeledContent("Verrechenbar") {
+                                Text(verrechenbar, format: .currency(code: "CHF"))
+                                    .monospacedDigit()
+                                    .foregroundStyle(verrechenbar < 0 ? .red : .secondary)
+                            }
+                        }
+                        LabeledContent("Lieferung") {
+                            TextField("kWh", text: $strombezugsmenge)
+                                .keyboardType(.decimalPad)
+                                .multilineTextAlignment(.trailing)
+                                .monospacedDigit()
+                        }
                     }
                 }
             }
@@ -148,6 +170,16 @@ struct PDFStromrechnungImportView: View {
         !rechnungssteller.trimmingCharacters(in: .whitespaces).isEmpty
         && Decimal(string: rechnungsbetrag.replacingOccurrences(of: ",", with: ".")) != nil
         && Decimal(string: strombezugsmenge.replacingOccurrences(of: ",", with: ".")) != nil
+        && (gutschrift.trimmingCharacters(in: .whitespaces).isEmpty
+            || Decimal(string: gutschrift.replacingOccurrences(of: ",", with: ".")) != nil)
+    }
+
+    private var verrechenbarerBetrag: Decimal? {
+        guard let betrag = Decimal(string: rechnungsbetrag.replacingOccurrences(of: ",", with: ".")) else {
+            return nil
+        }
+        let g = Decimal(string: gutschrift.replacingOccurrences(of: ",", with: ".")) ?? 0
+        return betrag - g
     }
 
     private func behandleDateiAuswahl(_ result: Result<[URL], Error>) {
@@ -199,6 +231,9 @@ struct PDFStromrechnungImportView: View {
     private func wendeErkanntesAn(_ erkannt: ErkannteStromrechnung) {
         rechnungssteller = erkannt.rechnungssteller
         rechnungsbetrag = erkannt.rechnungsbetrag
+        // Leere Gutschrift oder "0" → leeres Feld lassen, sonst übernehmen
+        let g = erkannt.gutschrift.trimmingCharacters(in: .whitespaces)
+        gutschrift = (g.isEmpty || Decimal(string: g.replacingOccurrences(of: ",", with: ".")) == 0) ? "" : g
         strombezugsmenge = erkannt.strombezugsmenge
 
         let formatter = ISO8601DateFormatter()
@@ -230,6 +265,7 @@ struct PDFStromrechnungImportView: View {
 
     private func speichern() {
         let betrag = Decimal(string: rechnungsbetrag.replacingOccurrences(of: ",", with: ".")) ?? 0
+        let gut = Decimal(string: gutschrift.replacingOccurrences(of: ",", with: ".")) ?? 0
         let menge = Decimal(string: strombezugsmenge.replacingOccurrences(of: ",", with: ".")) ?? 0
 
         let neu = Stromrechnung(
@@ -238,6 +274,7 @@ struct PDFStromrechnungImportView: View {
             abrechnungszeitraumBis: zeitraumBis,
             rechnungsdatum: rechnungsdatum,
             rechnungsbetrag: betrag,
+            gutschrift: gut,
             strombezugsmenge: menge,
             stromgemeinschaft: gemeinschaft
         )

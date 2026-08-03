@@ -49,7 +49,7 @@ struct BezugsparteiDetailView: View {
 
     /// Nicht verrechneter Gesamtbetrag der Gemeinschaft
     private var gemeinschaftOffenBetrag: Decimal {
-        let rechnungen = (gemeinschaft.stromrechnungen ?? []).reduce(Decimal(0)) { $0 + $1.rechnungsbetrag }
+        let rechnungen = (gemeinschaft.stromrechnungen ?? []).reduce(Decimal(0)) { $0 + $1.verrechenbarerBetrag }
         let abgerechnet = (gemeinschaft.stromabrechnungen ?? []).reduce(Decimal(0)) { $0 + $1.abrechnungsbetrag }
         return rechnungen - abgerechnet
     }

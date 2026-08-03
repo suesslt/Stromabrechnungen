@@ -25,8 +25,7 @@ struct BezugsparteiBearbeitenView: View {
     @State private var postalCode = ""
     @State private var city = ""
     @State private var countryCode = "CH"
-
-    @State private var validierungsfehler: String?
+    @State private var email = ""
 
     // MARK: - Berechnete Hilfsgrössen
 
@@ -43,8 +42,8 @@ struct BezugsparteiBearbeitenView: View {
 
     private var eingabeGueltig: Bool {
         guard !name.trimmingCharacters(in: .whitespaces).isEmpty,
-              let a = anteil, a > 0 else { return false }
-        return summeAndere + a <= 100
+              let a = anteil, a >= 0 else { return false }
+        return true
     }
 
     // MARK: - Body
@@ -86,6 +85,15 @@ struct BezugsparteiBearbeitenView: View {
                         }
                 }
 
+                // MARK: Kontakt
+                Section("Kontakt") {
+                    TextField("E-Mail", text: $email)
+                        .textContentType(.emailAddress)
+                        .keyboardType(.emailAddress)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                }
+
                 // MARK: Anteil
                 Section {
                     TextField("Anteil (%)", text: $anteilText)
@@ -97,11 +105,6 @@ struct BezugsparteiBearbeitenView: View {
                                 .foregroundStyle(neueSumme == 100 ? .green : (neueSumme > 100 ? .red : .orange))
                                 .bold()
                         }
-                    }
-                    if let fehler = validierungsfehler {
-                        Text(fehler)
-                            .foregroundStyle(.red)
-                            .font(.caption)
                     }
                 } header: {
                     Text("Anteil")
@@ -134,15 +137,11 @@ struct BezugsparteiBearbeitenView: View {
         postalCode = p.postalCode
         city = p.city
         countryCode = p.countryCode
+        email = p.email
     }
 
     private func speichern() {
         guard let a = anteil else { return }
-        let neueSumme = summeAndere + a
-        guard neueSumme <= 100 else {
-            validierungsfehler = "Die Summe der Anteile würde \(neueSumme.formatted()) % ergeben. Maximum ist 100 %."
-            return
-        }
 
         if let p = partei {
             p.name = name.trimmingCharacters(in: .whitespaces)
@@ -152,6 +151,7 @@ struct BezugsparteiBearbeitenView: View {
             p.postalCode = postalCode.trimmingCharacters(in: .whitespaces)
             p.city = city.trimmingCharacters(in: .whitespaces)
             p.countryCode = countryCode.trimmingCharacters(in: .whitespaces)
+            p.email = email.trimmingCharacters(in: .whitespaces)
         } else {
             let neu = Bezugspartei(
                 name: name.trimmingCharacters(in: .whitespaces),
@@ -161,6 +161,7 @@ struct BezugsparteiBearbeitenView: View {
                 postalCode: postalCode.trimmingCharacters(in: .whitespaces),
                 city: city.trimmingCharacters(in: .whitespaces),
                 countryCode: countryCode.trimmingCharacters(in: .whitespaces),
+                email: email.trimmingCharacters(in: .whitespaces),
                 stromgemeinschaft: gemeinschaft
             )
             modelContext.insert(neu)

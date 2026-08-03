@@ -13,7 +13,25 @@ struct ErkannteStromrechnung: Decodable {
     var abrechnungszeitraumVon: String // ISO-8601: "YYYY-MM-DD"
     var abrechnungszeitraumBis: String // ISO-8601: "YYYY-MM-DD"
     var rechnungsbetrag: String       // Dezimalzahl als String, z.B. "123.45"
+    var gutschrift: String            // Dezimalzahl als String, z.B. "12.50". "0" wenn keine Gutschrift.
     var strombezugsmenge: String      // Dezimalzahl als String, z.B. "456.789"
+
+    private enum CodingKeys: String, CodingKey {
+        case rechnungssteller, rechnungsdatum, abrechnungszeitraumVon, abrechnungszeitraumBis
+        case rechnungsbetrag, gutschrift, strombezugsmenge
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        rechnungssteller = try c.decode(String.self, forKey: .rechnungssteller)
+        rechnungsdatum = try c.decode(String.self, forKey: .rechnungsdatum)
+        abrechnungszeitraumVon = try c.decode(String.self, forKey: .abrechnungszeitraumVon)
+        abrechnungszeitraumBis = try c.decode(String.self, forKey: .abrechnungszeitraumBis)
+        rechnungsbetrag = try c.decode(String.self, forKey: .rechnungsbetrag)
+        // Toleriert fehlende Gutschrift in der Antwort (alte Modelle, unklare Rechnungen).
+        gutschrift = (try? c.decode(String.self, forKey: .gutschrift)) ?? "0"
+        strombezugsmenge = try c.decode(String.self, forKey: .strombezugsmenge)
+    }
 }
 
 // MARK: - Claude API Fehler
@@ -117,9 +135,12 @@ actor ClaudeService {
                             - abrechnungszeitraumVon: Beginn des Abrechnungszeitraums im Format YYYY-MM-DD
                             - abrechnungszeitraumBis: Ende des Abrechnungszeitraums im Format YYYY-MM-DD
                             - rechnungsbetrag: Gesamtbetrag der Rechnung als Dezimalzahl (z.B. "123.45")
+                            - gutschrift: Auf der Rechnung ausgewiesene Gutschrift / Vergütung in CHF \
+                              (z.B. für eingespeisten Strom oder Rückvergütungen). "0" wenn keine Gutschrift vorhanden.
                             - strombezugsmenge: Bezogene Strommenge in kWh als Dezimalzahl (z.B. "456.789")
 
-                            Falls ein Feld nicht eindeutig erkannt werden kann, verwende einen leeren String.
+                            Falls ein Feld nicht eindeutig erkannt werden kann, verwende einen leeren String \
+                            (bei der Gutschrift "0").
                             """
                         ]
                     ]

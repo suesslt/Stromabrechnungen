@@ -16,9 +16,9 @@ struct StromgemeinschaftDetailView: View {
 
     // MARK: Berechnete Summen
 
-    /// [1] Summe Rechnungsbeträge aller Stromrechnungen
+    /// [1] Summe verrechenbarer Beträge aller Stromrechnungen (Rechnungsbetrag minus Gutschrift)
     private var gesamtRechnungsbetrag: Decimal {
-        (gemeinschaft.stromrechnungen ?? []).reduce(0) { $0 + $1.rechnungsbetrag }
+        (gemeinschaft.stromrechnungen ?? []).reduce(0) { $0 + $1.verrechenbarerBetrag }
     }
 
     /// [2] Summe Strombezugsmengen aller Stromrechnungen
@@ -82,7 +82,12 @@ struct StromgemeinschaftDetailView: View {
                 ForEach((gemeinschaft.bezugsparteien ?? []).sorted(by: { $0.name < $1.name })) { partei in
                     NavigationLink(destination: BezugsparteiDetailView(gemeinschaft: gemeinschaft, partei: partei)) {
                         HStack {
-                            Text(partei.name)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(partei.name)
+                                Text("Anteil \(partei.anteil.formatted()) %")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                             Spacer()
                             Text(abgerechnetBetragFuerPartei(partei), format: .currency(code: "CHF"))
                                 .foregroundStyle(.secondary)
@@ -103,6 +108,21 @@ struct StromgemeinschaftDetailView: View {
                         .bold()
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
+                }
+
+                HStack {
+                    Label("Summe Anteile",
+                          systemImage: summeAnteile == 100
+                              ? "checkmark.circle.fill"
+                              : "exclamationmark.triangle.fill")
+                        .foregroundStyle(summeAnteile == 100 ? .green : .orange)
+                    Spacer()
+                    Text("\(summeAnteile.formatted()) %")
+                        .bold()
+                        .monospacedDigit()
+                        .foregroundStyle(summeAnteile == 100
+                            ? .green
+                            : (summeAnteile > 100 ? .red : .orange))
                 }
 
                 NavigationLink(destination: BezugsparteiBearbeitenView(gemeinschaft: gemeinschaft, partei: nil)) {

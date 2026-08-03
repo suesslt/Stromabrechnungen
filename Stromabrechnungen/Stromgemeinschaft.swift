@@ -34,8 +34,8 @@ final class Stromgemeinschaft {
     /// Kreditor-Adresse als SwissInvoice.Address
     var kreditorAdresse: Address {
         Address(
-            name: kreditorName,
-            addressAddition: kreditorAdresszusatz,
+            companyName: kreditorName,
+            addressAddition1: kreditorAdresszusatz,
             street: kreditorStrasse,
             houseNumber: kreditorHausnummer,
             postalCode: kreditorPLZ,
@@ -78,7 +78,7 @@ final class Stromgemeinschaft {
     func erstelleDeltaAbrechnung(modelContext: ModelContext) {
         // Summe aller Stromrechnungen
         let rechnungen = stromrechnungen ?? []
-        let summeBetragRechnungen = rechnungen.reduce(Decimal(0)) { $0 + $1.rechnungsbetrag }
+        let summeBetragRechnungen = rechnungen.reduce(Decimal(0)) { $0 + $1.verrechenbarerBetrag }
         let summeMengeRechnungen = rechnungen.reduce(Decimal(0)) { $0 + $1.strombezugsmenge }
         
         // Summe aller bisherigen Stromabrechnungen

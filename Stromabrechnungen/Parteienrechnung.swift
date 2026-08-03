@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import SwissInvoice
+import Score
 
 @Model
 final class Parteienrechnung {
@@ -87,13 +88,14 @@ final class Parteienrechnung {
         )
 
         return SwissInvoice(
-            title: "Stromrechnung",
             creditor: creditor,
-            debtor: debtor,
-            invoiceDate: rechnungsdatum,
             iban: iban,
+            currency: .chf,
+            debtor: debtor,
+            title: "Stromrechnung",
             subject: "Stromabrechnung \(von) – \(bis)",
             leadingText: leadingText,
+            invoiceDate: rechnungsdatum,
             lineItems: [lineItem],
             trailingText: trailingText
         )

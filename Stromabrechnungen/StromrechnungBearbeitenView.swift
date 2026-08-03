@@ -20,6 +20,7 @@ struct StromrechnungBearbeitenView: View {
     @State private var zeitraumVon = Date.now
     @State private var zeitraumBis = Date.now
     @State private var rechnungsbetrag = ""
+    @State private var gutschrift = ""
     @State private var strombezugsmenge = ""
 
     @State private var zeigeUeberlagerungAlert = false
@@ -37,10 +38,31 @@ struct StromrechnungBearbeitenView: View {
                     DatePicker("Zeitraum bis", selection: $zeitraumBis, displayedComponents: .date)
                 }
                 Section("Beträge") {
-                    TextField("Rechnungsbetrag (CHF)", text: $rechnungsbetrag)
-                        .keyboardType(.decimalPad)
-                    TextField("Strombezugsmenge (kWh)", text: $strombezugsmenge)
-                        .keyboardType(.decimalPad)
+                    LabeledContent("Rechnungsbetrag") {
+                        TextField("CHF", text: $rechnungsbetrag)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .monospacedDigit()
+                    }
+                    LabeledContent("Gutschrift") {
+                        TextField("CHF", text: $gutschrift)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .monospacedDigit()
+                    }
+                    if let verrechenbar = verrechenbarerBetrag {
+                        LabeledContent("Verrechenbar") {
+                            Text(verrechenbar, format: .currency(code: "CHF"))
+                                .monospacedDigit()
+                                .foregroundStyle(verrechenbar < 0 ? .red : .secondary)
+                        }
+                    }
+                    LabeledContent("Lieferung") {
+                        TextField("kWh", text: $strombezugsmenge)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .monospacedDigit()
+                    }
                 }
             }
             .navigationTitle(rechnung == nil ? "Neue Stromrechnung" : "Rechnung bearbeiten")
@@ -67,6 +89,17 @@ struct StromrechnungBearbeitenView: View {
         !rechnungssteller.trimmingCharacters(in: .whitespaces).isEmpty
         && Decimal(string: rechnungsbetrag.replacingOccurrences(of: ",", with: ".")) != nil
         && Decimal(string: strombezugsmenge.replacingOccurrences(of: ",", with: ".")) != nil
+        && (gutschrift.trimmingCharacters(in: .whitespaces).isEmpty
+            || Decimal(string: gutschrift.replacingOccurrences(of: ",", with: ".")) != nil)
+    }
+
+    /// Live berechneter verrechenbarer Betrag, sobald beide Felder valide sind.
+    private var verrechenbarerBetrag: Decimal? {
+        guard let betrag = Decimal(string: rechnungsbetrag.replacingOccurrences(of: ",", with: ".")) else {
+            return nil
+        }
+        let g = Decimal(string: gutschrift.replacingOccurrences(of: ",", with: ".")) ?? 0
+        return betrag - g
     }
 
     private func vorbelegen() {
@@ -76,6 +109,7 @@ struct StromrechnungBearbeitenView: View {
         zeitraumVon = r.abrechnungszeitraumVon
         zeitraumBis = r.abrechnungszeitraumBis
         rechnungsbetrag = "\(r.rechnungsbetrag)"
+        gutschrift = r.gutschrift == 0 ? "" : "\(r.gutschrift)"
         strombezugsmenge = "\(r.strombezugsmenge)"
     }
 
@@ -95,6 +129,7 @@ struct StromrechnungBearbeitenView: View {
 
     private func speichern() {
         let betrag = Decimal(string: rechnungsbetrag.replacingOccurrences(of: ",", with: ".")) ?? 0
+        let gut = Decimal(string: gutschrift.replacingOccurrences(of: ",", with: ".")) ?? 0
         let menge = Decimal(string: strombezugsmenge.replacingOccurrences(of: ",", with: ".")) ?? 0
 
         if let r = rechnung {
@@ -104,6 +139,7 @@ struct StromrechnungBearbeitenView: View {
             r.abrechnungszeitraumVon = zeitraumVon
             r.abrechnungszeitraumBis = zeitraumBis
             r.rechnungsbetrag = betrag
+            r.gutschrift = gut
             r.strombezugsmenge = menge
         } else {
             // Neue Rechnung anlegen
@@ -113,6 +149,7 @@ struct StromrechnungBearbeitenView: View {
                 abrechnungszeitraumBis: zeitraumBis,
                 rechnungsdatum: rechnungsdatum,
                 rechnungsbetrag: betrag,
+                gutschrift: gut,
                 strombezugsmenge: menge,
                 stromgemeinschaft: gemeinschaft
             )

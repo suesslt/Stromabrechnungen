@@ -7,7 +7,7 @@
       "location" : "https://github.com/suesslt/score.git",
       "state" : {
         "branch" : "main",
-        "revision" : "16be716ec3429222d96e6212d383f776822b7cea"
+        "revision" : "67490014d28415a4ef2250b413cd2a72e7dd0c34"
       }
     },
     {
@@ -16,7 +16,7 @@
       "location" : "https://github.com/suesslt/SwissInvoice.git",
       "state" : {
         "branch" : "main",
-        "revision" : "3cfe2176a67b7d4865ad20cc41f94f39480f44b2"
+        "revision" : "9e700339183a390bec5fe8c9797074501ebc0544"
       }
     }
   ],

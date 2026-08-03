@@ -52,6 +52,27 @@ struct ParteienrechnungErstellenView: View {
         summeAbrechnungsMenge - summeRechnungsMenge
     }
 
+    /// Spätestes „Bis" der bereits gestellten Parteienrechnungen (Cutoff für die noch
+    /// nicht abgerechnete Periode). nil → keine bisherigen Rechnungen.
+    private var letzterAbgerechneterBis: Date? {
+        (partei.parteienrechnungen ?? []).map(\.rechnungszeitraumBis).max()
+    }
+
+    /// Stromrechnungen der Gemeinschaft, die in die noch nicht abgerechnete Periode fallen.
+    private var relevanteStromrechnungen: [Stromrechnung] {
+        let alle = gemeinschaft.stromrechnungen ?? []
+        guard let cutoff = letzterAbgerechneterBis else { return alle }
+        return alle.filter { $0.abrechnungszeitraumBis > cutoff }
+    }
+
+    private var vorschlagZeitraumVon: Date? {
+        relevanteStromrechnungen.map(\.abrechnungszeitraumVon).min()
+    }
+
+    private var vorschlagZeitraumBis: Date? {
+        relevanteStromrechnungen.map(\.abrechnungszeitraumBis).max()
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -103,6 +124,8 @@ struct ParteienrechnungErstellenView: View {
                 // Vorgeschlagene Werte vorausfüllen
                 abgerechneterBetragText = "\(vorgeschlagenerBetrag)"
                 abgerechneteBezugsmengeText = "\(vorgeschlageneMenge)"
+                if let von = vorschlagZeitraumVon { rechnungszeitraumVon = von }
+                if let bis = vorschlagZeitraumBis { rechnungszeitraumBis = bis }
             }
         }
     }
