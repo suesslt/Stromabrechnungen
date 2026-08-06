@@ -3,6 +3,7 @@
 //  Stromabrechnungen
 //
 
+import Score
 import SwiftUI
 import SwiftData
 
@@ -68,7 +69,7 @@ struct StromgemeinschaftDetailView: View {
                         .monospacedDigit()
                 }
                 LabeledContent("Gesamtkosten") {
-                    Text(gesamtRechnungsbetrag, format: .currency(code: "CHF"))
+                    Text(Money.of(.chf, gesamtRechnungsbetrag).formatted)
                         .monospacedDigit()
                 }
             } header: {
@@ -89,7 +90,7 @@ struct StromgemeinschaftDetailView: View {
                                     .foregroundStyle(.secondary)
                             }
                             Spacer()
-                            Text(abgerechnetBetragFuerPartei(partei), format: .currency(code: "CHF"))
+                            Text(Money.of(.chf, abgerechnetBetragFuerPartei(partei)).formatted)
                                 .foregroundStyle(.secondary)
                                 .monospacedDigit()
                         }
@@ -104,7 +105,7 @@ struct StromgemeinschaftDetailView: View {
                     Text("Summe")
                         .bold()
                     Spacer()
-                    Text(summeAbgerechnet, format: .currency(code: "CHF"))
+                    Text(Money.of(.chf, summeAbgerechnet).formatted)
                         .bold()
                         .foregroundStyle(.secondary)
                         .monospacedDigit()

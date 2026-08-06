@@ -3,10 +3,12 @@
 //  Stromabrechnungen
 //
 
+import Score
 import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
 import PDFKit
+import ScoreUI
 
 struct PDFStromrechnungImportView: View {
     @Environment(\.dismiss) private var dismiss
@@ -54,7 +56,7 @@ struct PDFStromrechnungImportView: View {
                     }
 
                     if let pdf = pdfVorschau {
-                        PDFVorschauView(pdf: pdf)
+                        PDFPreview(document: pdf, displayMode: .singlePage)
                             .frame(height: 200)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                             .listRowInsets(EdgeInsets())
@@ -122,7 +124,7 @@ struct PDFStromrechnungImportView: View {
                         }
                         if let verrechenbar = verrechenbarerBetrag {
                             LabeledContent("Verrechenbar") {
-                                Text(verrechenbar, format: .currency(code: "CHF"))
+                                Text(Money.of(.chf, verrechenbar).formatted)
                                     .monospacedDigit()
                                     .foregroundStyle(verrechenbar < 0 ? .red : .secondary)
                             }
@@ -287,21 +289,3 @@ struct PDFStromrechnungImportView: View {
     }
 }
 
-// MARK: - PDF Vorschau (PDFKit in SwiftUI)
-
-private struct PDFVorschauView: UIViewRepresentable {
-    let pdf: PDFDocument
-
-    func makeUIView(context: Context) -> PDFView {
-        let view = PDFView()
-        view.autoScales = true
-        view.displayMode = .singlePage
-        view.displayDirection = .vertical
-        view.backgroundColor = .secondarySystemBackground
-        return view
-    }
-
-    func updateUIView(_ uiView: PDFView, context: Context) {
-        uiView.document = pdf
-    }
-}

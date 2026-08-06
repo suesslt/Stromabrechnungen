@@ -6,10 +6,10 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @AppStorage("claudeAPIKey") private var claudeAPIKey = ""
     @State private var eingabe = ""
     @State private var zeigeKey = false
     @State private var gespeichert = false
+    @State private var fehler: String?
 
     var body: some View {
         Form {
@@ -38,11 +38,17 @@ struct SettingsView: View {
                 }
 
                 Button {
-                    claudeAPIKey = eingabe.trimmingCharacters(in: .whitespaces)
-                    ClaudeService.shared.apiKey = claudeAPIKey
-                    gespeichert = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        gespeichert = false
+                    let key = eingabe.trimmingCharacters(in: .whitespaces)
+                    Task {
+                        do {
+                            try await ClaudeService.shared.setAPIKey(key)
+                            fehler = nil
+                            gespeichert = true
+                            try? await Task.sleep(for: .seconds(2))
+                            gespeichert = false
+                        } catch {
+                            fehler = "Der Key konnte nicht im Schlüsselbund gespeichert werden. Versuche es erneut; hilft das nicht, starte die App neu."
+                        }
                     }
                 } label: {
                     HStack {
@@ -55,10 +61,16 @@ struct SettingsView: View {
                 }
                 .disabled(eingabe.trimmingCharacters(in: .whitespaces).isEmpty)
 
+                if let fehler {
+                    Text(fehler)
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                }
+
             } header: {
                 Text("Claude AI API-Key")
             } footer: {
-                Text("Den API-Key erhältst du unter console.anthropic.com. Er wird ausschliesslich lokal auf diesem Gerät in den UserDefaults gespeichert und nie weitergegeben.")
+                Text("Den API-Key erhältst du unter console.anthropic.com. Er wird ausschliesslich lokal auf diesem Gerät im Schlüsselbund gespeichert und nie weitergegeben.")
             }
 
             Section("Modell") {
@@ -66,8 +78,8 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Einstellungen")
-        .onAppear {
-            eingabe = claudeAPIKey
+        .task {
+            eingabe = await ClaudeService.shared.apiKey()
         }
     }
 }

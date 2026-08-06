@@ -3,6 +3,7 @@
 //  Stromabrechnungen
 //
 
+import Score
 import SwiftUI
 import SwiftData
 
@@ -98,7 +99,7 @@ struct ParteienrechnungErstellenView: View {
                 } header: {
                     Text("Beträge")
                 } footer: {
-                    Text("Vorgeschlagen: \(vorgeschlagenerBetrag.formatted(.currency(code: "CHF"))) / \(vorgeschlageneMenge.formatted()) kWh (noch nicht in Rechnung gestellter Betrag)")
+                    Text("Vorgeschlagen: \(Money.of(.chf, vorgeschlagenerBetrag).formatted) / \(vorgeschlageneMenge.formatted()) kWh (noch nicht in Rechnung gestellter Betrag)")
                 }
 
                 Section("Status") {

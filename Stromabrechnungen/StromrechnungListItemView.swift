@@ -3,19 +3,11 @@
 //  Stromabrechnungen
 //
 
+import Score
 import SwiftUI
 
 struct StromrechnungListItemView: View {
     let rechnung: Stromrechnung
-
-    private static let chfFormatter: NumberFormatter = {
-        let f = NumberFormatter()
-        f.numberStyle = .currency
-        f.currencyCode = "CHF"
-        f.minimumFractionDigits = 2
-        f.maximumFractionDigits = 2
-        return f
-    }()
 
     private static let mengenFormatter: NumberFormatter = {
         let f = NumberFormatter()
@@ -52,16 +44,16 @@ struct StromrechnungListItemView: View {
                         .monospacedDigit()
                 }
                 LabeledContent("Rechnungsbetrag") {
-                    Text(Self.chfFormatter.string(from: rechnung.rechnungsbetrag as NSDecimalNumber) ?? "")
+                    Text(Money.of(.chf, rechnung.rechnungsbetrag).formatted)
                         .monospacedDigit()
                 }
                 if rechnung.gutschrift > 0 {
                     LabeledContent("Gutschrift") {
-                        Text(Self.chfFormatter.string(from: rechnung.gutschrift as NSDecimalNumber) ?? "")
+                        Text(Money.of(.chf, rechnung.gutschrift).formatted)
                             .monospacedDigit()
                     }
                     LabeledContent("Verrechenbar") {
-                        Text(Self.chfFormatter.string(from: rechnung.verrechenbarerBetrag as NSDecimalNumber) ?? "")
+                        Text(Money.of(.chf, rechnung.verrechenbarerBetrag).formatted)
                             .monospacedDigit()
                     }
                 }

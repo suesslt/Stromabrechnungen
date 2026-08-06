@@ -3,6 +3,7 @@
 //  Stromabrechnungen
 //
 
+import Score
 import SwiftUI
 import SwiftData
 
@@ -52,7 +53,7 @@ struct StromrechnungBearbeitenView: View {
                     }
                     if let verrechenbar = verrechenbarerBetrag {
                         LabeledContent("Verrechenbar") {
-                            Text(verrechenbar, format: .currency(code: "CHF"))
+                            Text(Money.of(.chf, verrechenbar).formatted)
                                 .monospacedDigit()
                                 .foregroundStyle(verrechenbar < 0 ? .red : .secondary)
                         }

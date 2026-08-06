@@ -3,6 +3,7 @@
 //  Stromabrechnungen
 //
 
+import Score
 import SwiftUI
 import SwiftData
 
@@ -63,12 +64,12 @@ struct BezugsparteiDetailView: View {
 
     /// Offener anteiliger Betrag = prozentualer Anteil am noch nicht abgerechneten Gemeinschaftsbetrag
     private var offenerAnteiligBetrag: Decimal {
-        (gemeinschaftOffenBetrag * partei.anteil / 100).rounded(scale: 2)
+        (gemeinschaftOffenBetrag * partei.anteilPercent.factorAmount).rounded(scale: 2)
     }
 
     /// Offene anteilige Bezugsmenge
     private var offeneAnteiligeMenge: Decimal {
-        (gemeinschaftOffenMenge * partei.anteil / 100).rounded(scale: 3)
+        (gemeinschaftOffenMenge * partei.anteilPercent.factorAmount).rounded(scale: 3)
     }
 
     // MARK: - Body
@@ -105,7 +106,7 @@ struct BezugsparteiDetailView: View {
             // MARK: Anteil
             Section("Anteil an der Gemeinschaft") {
                 LabeledContent("Anteil") {
-                    Text("\(partei.anteil.formatted()) %")
+                    Text("\(partei.anteilPercent)")
                         .monospacedDigit()
                 }
             }
@@ -113,7 +114,7 @@ struct BezugsparteiDetailView: View {
             // MARK: Offene Beträge
             Section {
                 LabeledContent("Offener anteiliger Betrag") {
-                    Text(offenerAnteiligBetrag, format: .currency(code: "CHF"))
+                    Text(Money.of(.chf, offenerAnteiligBetrag).formatted)
                         .monospacedDigit()
                         .foregroundStyle(offenerAnteiligBetrag > 0 ? .orange : .secondary)
                         .bold()
@@ -127,13 +128,13 @@ struct BezugsparteiDetailView: View {
             } header: {
                 Text("Offen (noch nicht abgerechnet)")
             } footer: {
-                Text("Prozentualer Anteil (\(partei.anteil.formatted()) %) am noch nicht abgerechneten Betrag und der Bezugsmenge der Gemeinschaft.")
+                Text("Prozentualer Anteil (\(partei.anteilPercent)) am noch nicht abgerechneten Betrag und der Bezugsmenge der Gemeinschaft.")
             }
 
             // MARK: Bereits abgerechnet
             Section {
                 LabeledContent("Abgerechneter Betrag") {
-                    Text(abgerechnetBetrag, format: .currency(code: "CHF"))
+                    Text(Money.of(.chf, abgerechnetBetrag).formatted)
                         .monospacedDigit()
                         .foregroundStyle(.secondary)
                 }
@@ -210,7 +211,7 @@ private struct ParteienrechnungListItemView: View {
                 Text(rechnung.rechnungsdatum, style: .date)
                     .font(.headline)
                 Spacer()
-                Text(rechnung.abgerechneterBetrag, format: .currency(code: "CHF"))
+                Text(Money.of(.chf, rechnung.abgerechneterBetrag).formatted)
                     .monospacedDigit()
                     .bold()
             }

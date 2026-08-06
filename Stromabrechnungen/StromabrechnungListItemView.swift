@@ -3,21 +3,13 @@
 //  Stromabrechnungen
 //
 
+import Score
 import SwiftUI
 
 struct StromabrechnungListItemView: View {
     let abrechnung: Stromabrechnung
 
     @State private var aufgeklappt = false
-
-    private static let chfFormatter: NumberFormatter = {
-        let f = NumberFormatter()
-        f.numberStyle = .currency
-        f.currencyCode = "CHF"
-        f.minimumFractionDigits = 2
-        f.maximumFractionDigits = 2
-        return f
-    }()
 
     private static let mengenFormatter: NumberFormatter = {
         let f = NumberFormatter()
@@ -50,7 +42,7 @@ struct StromabrechnungListItemView: View {
                 .monospacedDigit()
                 .foregroundStyle(.primary)
 
-                Text(Self.chfFormatter.string(from: abrechnung.abrechnungsbetrag as NSDecimalNumber) ?? "")
+                Text(Money.of(.chf, abrechnung.abrechnungsbetrag).formatted)
                     .monospacedDigit()
                     .foregroundStyle(.primary)
             }
@@ -97,7 +89,7 @@ struct StromabrechnungListItemView: View {
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                     .monospacedDigit()
-                                    Text(Self.chfFormatter.string(from: pa.betrag as NSDecimalNumber) ?? "")
+                                    Text(Money.of(.chf, pa.betrag).formatted)
                                         .font(.subheadline)
                                         .monospacedDigit()
                                 }
